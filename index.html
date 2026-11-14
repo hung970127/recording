@@ -555,48 +555,81 @@ function drawRoom() {
   r(673,257,39,17,"#c4a36b");
   r(678,273,29,4,"#f2cf91");
 
-  // ===== 中央木製樓梯 =====
-  // 正面 2D，樓梯逐階升高
-  // 保留木製階梯的完整側面結構
+ 
+  // ===== 中央木製樓梯 V2 =====
+  // 正面 2D 像素風，木製五階樓梯
 
-  const sx=390;
-  const baseY=408;
-  const sw=160;
-  const rise=47;
+  const stairX = 391;
+  const stairY = 170;
+  const stairW = 158;
+  const stairH = 238;
+  const stepHeight = 47;
 
-  // 樓梯背板
-  r(sx,174,sw,234,"#624a36");
+  // 樓梯後方陰影
+  r(stairX - 7, stairY + 5, stairW + 14, stairH,
+    "#171b25");
 
-  // 逐階畫出踏板與踢面
-  for(let i=0;i<5;i++){
-    const y=baseY-(i+1)*rise;
+  // 木製樓梯主體
+  r(stairX, stairY, stairW, stairH, "#72543c");
 
-    // 踢面
-    r(sx,y,sw,rise,"#a1815e");
+  // 左右木製側板
+  r(stairX, stairY, 12, stairH, "#94704c");
+  r(stairX + stairW - 12, stairY, 12, stairH, "#94704c");
 
-    // 木板接縫
-    r(sx,y+rise-6,sw,6,"#6d5039");
+  // 五個獨立階梯
+  for (let i = 0; i < 5; i++) {
+    const y = stairY + i * stepHeight;
 
-    // 踏板
-    r(sx-4,y,sw+8,9,"#d6b388");
-    r(sx-4,y+7,sw+8,4,"#8c6848");
+    // 階梯正面陰影
+    r(stairX + 13, y + 8, stairW - 26, 36,
+      "#60452f");
+
+    // 木製踢面
+    r(stairX + 15, y + 10, stairW - 30, 29,
+      i % 2 === 0 ? "#a78159" : "#98734f");
+
+    // 踏板上表面
+    r(stairX + 9, y, stairW - 18, 11,
+      "#d6b38a");
+
+    // 踏板厚度
+    r(stairX + 9, y + 9, stairW - 18, 6,
+      "#825e40");
+
+    // 踏板前緣高光
+    r(stairX + 12, y + 2, stairW - 24, 2,
+      "#f0cca0");
 
     // 木紋
-    r(sx+14,y+21,67,2,"#c09a70");
-    r(sx+91,y+33,48,2,"#8b6b4c");
-    r(sx+34,y+29,32,1,"#d1ab7e");
+    r(stairX + 26, y + 21, 54, 2, "#bc956c");
+    r(stairX + 94, y + 29, 32, 2, "#765439");
+
+    // 階梯底部陰影
+    r(stairX + 15, y + 39, stairW - 30, 5,
+      "#513b2d");
   }
 
-  // 樓梯兩側木框
-  wood(sx-10,170,10,238);
-  wood(sx+sw,170,10,238);
+  // 左側扶手立柱
+  r(stairX - 10, stairY - 22, 13, stairH + 27,
+    "#7d5a3c");
+  r(stairX - 7, stairY - 22, 4, stairH + 27,
+    "#c69b6b");
 
-  // 兩側扶手
-  wood(sx-15,150,13,258);
-  wood(sx+sw+2,150,13,258);
+  // 右側扶手立柱
+  r(stairX + stairW - 3, stairY - 22, 13,
+    stairH + 27, "#7d5a3c");
+  r(stairX + stairW, stairY - 22, 4,
+    stairH + 27, "#c69b6b");
 
-  // 扶手頂端
-  wood(sx-15,145,190,12);
+  // 扶手頂端木板
+  r(stairX - 15, stairY - 27, stairW + 30, 12,
+    "#b58a5e");
+  r(stairX - 15, stairY - 27, stairW + 30, 3,
+    "#e2bb88");
+
+  // 樓梯底部收邊
+  r(stairX - 7, stairY + stairH - 4,
+    stairW + 14, 10, "#4b382c");
 
   // ===== 地毯 =====
   r(332,417,295,91,"#263348");
