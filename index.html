@@ -445,70 +445,44 @@ function drawRoom() {
 
 
  
-  // ===== 中央木製階梯：側面階梯造型 =====
+  
+  // ===== 中央木製樓梯：2D 正面視角 =====
 
-  // 階梯主體：從左下往右上
-  const steps = [
-    { x: 380, y: 355, w: 160, h: 50 },
-    { x: 412, y: 307, w: 128, h: 48 },
-    { x: 444, y: 259, w: 96, h: 48 },
-    { x: 476, y: 211, w: 64, h: 48 },
-    { x: 508, y: 163, w: 32, h: 48 }
-  ];
+  // 樓梯左右木製支柱
+  rectangle(389, 172, 13, 233, "#674b37");
+  rectangle(543, 172, 13, 233, "#674b37");
 
-  // 木製階梯本體
-  steps.forEach(step => {
-    rectangle(
-      step.x, step.y,
-      step.w, step.h,
-      "#96734e"
-    );
+  // 支柱高光
+  rectangle(391, 172, 3, 233, "#b58c61");
+  rectangle(545, 172, 3, 233, "#b58c61");
 
-    // 正面木紋
-    rectangle(
-      step.x + 7,
-      step.y + 20,
-      step.w - 14,
-      2,
-      "#b28b5e"
-    );
+  // 樓梯後方主體
+  rectangle(402, 188, 141, 217, "#75543a");
 
-    // 底部陰影
-    rectangle(
-      step.x,
-      step.y + step.h - 7,
-      step.w,
-      7,
-      "#654b35"
-    );
-  });
+  // 五階木製階梯
+  for (let i = 0; i < 5; i++) {
+    const y = 197 + i * 41;
 
-  // 每一階的踏板
-  steps.forEach(step => {
-    rectangle(
-      step.x - 3,
-      step.y,
-      step.w + 6,
-      9,
-      "#d3ae79"
-    );
+    // 階梯正面
+    rectangle(402, y, 141, 38, "#a17b56");
 
-    // 踏板前緣陰影
-    rectangle(
-      step.x - 3,
-      step.y + 7,
-      step.w + 6,
-      3,
-      "#a67d52"
-    );
-  });
+    // 上緣踏板
+    rectangle(397, y, 151, 8, "#d5ad7b");
 
-  // 階梯左側木製收邊
-  rectangle(380, 355, 7, 50, "#6c5039");
-  rectangle(412, 307, 7, 48, "#6c5039");
-  rectangle(444, 259, 7, 48, "#6c5039");
-  rectangle(476, 211, 7, 48, "#6c5039");
-  rectangle(508, 163, 7, 48, "#6c5039");
+    // 踏板陰影
+    rectangle(397, y + 8, 151, 4, "#7b593e");
+
+    // 木紋
+    rectangle(416, y + 22, 67, 2, "#bc966b");
+    rectangle(492, y + 29, 36, 2, "#876448");
+  }
+
+  // 樓梯底座
+  rectangle(392, 400, 161, 8, "#503b2c");
+
+  // 左右扶手頂端
+  rectangle(385, 164, 21, 12, "#c49b6d");
+  rectangle(539, 164, 21, 12, "#c49b6d");
 
 
  
