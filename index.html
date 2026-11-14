@@ -255,8 +255,8 @@ function skipCurrentVideo() {
 storyVideo.addEventListener("ended", finishCurrentVideo);
 
 function startOpening() {
-  playStoryVideo("videos/opening.mp4", () => {
-    playStoryVideo("videos/hacker.mp4", () => {
+  playStoryVideo("video/opening.mp4", () => {
+    playStoryVideo("video/hacker.mp4", () => {
       startGame();
     });
   });
