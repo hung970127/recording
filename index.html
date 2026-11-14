@@ -536,7 +536,8 @@ function startOpening() {
   }
 
 
-function startGame() {
+let transitionStart = 0;
+  function startGame() {
   hideAllScreens();
 
   gameStarted = false;
@@ -552,6 +553,7 @@ function startGame() {
 
   // 白光閃過，逐漸露出宿舍
   flash.classList.remove("active");
+    transitionStart = performance.now();
   void flash.offsetWidth;
   flash.classList.add("active");
 
