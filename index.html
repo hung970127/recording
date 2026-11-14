@@ -661,47 +661,36 @@ function startOpening() {
   // 確認駭客身分
   // ====================================
 
- const storyVideo = document.getElementById("storyVideo");
+ 
+function confirmSuspect() {
+  if (selectedSuspect === -1) {
+    alert("請先選擇一位嫌疑人！");
+    return;
+  }
 
-let videoNextAction = null;
+  if (currentAudio) {
+    currentAudio.pause();
+  }
 
-function playStoryVideo(filename, nextAction) {
-  hideAllScreens();
+  const isCorrect = selectedSuspect === correctSuspect;
 
-  document.getElementById("videoScreen")
-    .classList.add("active");
+  const endingVideo = isCorrect
+    ? "videos/success.mp4"
+    : "videos/failure.mp4";
 
-  videoNextAction = nextAction;
+  playStoryVideo(endingVideo, () => {
+    hideAllScreens();
 
-  storyVideo.src = filename;
-  storyVideo.currentTime = 0;
-  storyVideo.play();
-}
+    document.getElementById("resultScreen")
+      .classList.add("active");
 
-function finishCurrentVideo() {
-  storyVideo.pause();
-  storyVideo.removeAttribute("src");
-  storyVideo.load();
-
-  const next = videoNextAction;
-  videoNextAction = null;
-
-  if (next) next();
-}
-
-function skipCurrentVideo() {
-  finishCurrentVideo();
-}
-
-storyVideo.addEventListener("ended", finishCurrentVideo);
-
-function startOpening() {
-  playStoryVideo("videos/opening.mp4", () => {
-    playStoryVideo("videos/hacker.mp4", () => {
-      startGame();
-    });
+    document.getElementById("resultText").textContent =
+      isCorrect
+        ? "成功找出真正的駭客！"
+        : "指認錯誤，駭客仍然逍遙法外……";
   });
 }
+
 
   // ====================================
   // 遊戲主迴圈
