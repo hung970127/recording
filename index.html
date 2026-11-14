@@ -255,8 +255,9 @@ function skipCurrentVideo() {
 storyVideo.addEventListener("ended", finishCurrentVideo);
 
 function startOpening() {
-  playStoryVideo("video/opening.mp4", () => {
-    playStoryVideo("video/hacker.mp4", () => {
+ playStoryVideo("video/opening.mp4", () => {
+  playStoryVideo("video/hacker.mp4", () => {
+
       startGame();
     });
   });
@@ -674,9 +675,9 @@ function confirmSuspect() {
 
   const isCorrect = selectedSuspect === correctSuspect;
 
-  const endingVideo = isCorrect
-    ? "videos/success.mp4"
-    : "videos/failure.mp4";
+ const endingVideo = isCorrect
+  ? "video/success.mp4"
+  : "video/failure.mp4";
 
   playStoryVideo(endingVideo, () => {
     hideAllScreens();
