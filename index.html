@@ -195,12 +195,70 @@
 
     <div class="clues">
 
-      <div class="clue">
-        <h2>✉ 信封</h2>
-        <p>線索一</p>
-        <p>調性：E 小調</p>
-        <p>這裡可以放你們真正的謎題</p>
-      </div>
+    <div class="clue">
+  <h2>✉ 信封</h2>
+  <p>線索一：神祕樂譜</p>
+
+  <div class="sheet-music">
+    <svg viewBox="0 0 600 180"
+         width="100%"
+         xmlns="http://www.w3.org/2000/svg">
+
+      <!-- 五線譜 -->
+      <g stroke="#292929" stroke-width="2">
+        <line x1="15" y1="55" x2="585" y2="55"/>
+        <line x1="15" y1="75" x2="585" y2="75"/>
+        <line x1="15" y1="95" x2="585" y2="95"/>
+        <line x1="15" y1="115" x2="585" y2="115"/>
+        <line x1="15" y1="135" x2="585" y2="135"/>
+      </g>
+
+      <!-- 高音譜號 -->
+      <text x="23" y="140"
+            font-size="105"
+            font-family="serif"
+            fill="#222">𝄞</text>
+
+      <!-- E 小調：F# -->
+      <text x="95" y="75"
+            font-size="36"
+            font-family="serif"
+            fill="#222">♯</text>
+
+      <!-- 音符：A E D A E B -->
+      <!-- 八分音符音頭 -->
+      <g fill="#222">
+        <ellipse cx="170" cy="105" rx="9" ry="6" transform="rotate(-20 170 105)"/>
+        <ellipse cx="245" cy="125" rx="9" ry="6" transform="rotate(-20 245 125)"/>
+        <ellipse cx="320" cy="135" rx="9" ry="6" transform="rotate(-20 320 135)"/>
+        <ellipse cx="395" cy="105" rx="9" ry="6" transform="rotate(-20 395 105)"/>
+        <ellipse cx="470" cy="125" rx="9" ry="6" transform="rotate(-20 470 125)"/>
+        <ellipse cx="545" cy="95" rx="9" ry="6" transform="rotate(-20 545 95)"/>
+      </g>
+
+      <!-- 符桿 -->
+      <g stroke="#222" stroke-width="2.5">
+        <line x1="178" y1="105" x2="178" y2="55"/>
+        <line x1="253" y1="125" x2="253" y2="75"/>
+        <line x1="328" y1="135" x2="328" y2="85"/>
+        <line x1="403" y1="105" x2="403" y2="55"/>
+        <line x1="478" y1="125" x2="478" y2="75"/>
+        <line x1="553" y1="95" x2="553" y2="45"/>
+      </g>
+
+      <!-- 八分音符符尾 -->
+      <g fill="none" stroke="#222" stroke-width="3">
+        <path d="M178 55 Q198 58 192 78"/>
+        <path d="M253 75 Q273 78 267 98"/>
+        <path d="M328 85 Q348 88 342 108"/>
+        <path d="M403 55 Q423 58 417 78"/>
+        <path d="M478 75 Q498 78 492 98"/>
+        <path d="M553 45 Q573 48 567 68"/>
+      </g>
+
+    </svg>
+  </div>
+</div>
 
       <div class="clue">
         <h2>⚿ 鑰匙與便條紙</h2>
