@@ -132,6 +132,28 @@
       font-size: 22px;
       margin: 20px;
     }
+
+  
+#flash {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+#flash.active {
+  animation: whiteFlash 3s ease-out forwards;
+}
+
+@keyframes whiteFlash {
+  0%   { opacity: 1; }
+  15%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+  
   </style>
 </head>
 
@@ -157,7 +179,8 @@
   <canvas id="canvas" width="960" height="540"></canvas>
 
   <div id="dialogue"></div>
-
+<div id="flash"></div>
+  
   <!-- 開始畫面 -->
   <div id="start" class="screen active">
     <h1>錄音期中</h1>
@@ -512,17 +535,37 @@ function startOpening() {
     );
   }
 
-  function startGame() {
-    hideAllScreens();
 
-    gameStarted = true;
-    animationTime = 0;
+function startGame() {
+  hideAllScreens();
 
-    player.x = 120;
+  gameStarted = false;
+  animationTime = 0;
+  clueShown = false;
+
+  player.x = 120;
+  player.state = "idle";
+
+  hideDialogue();
+
+  const flash = document.getElementById("flash");
+
+  // 白光閃過，逐漸露出宿舍
+  flash.classList.remove("active");
+  void flash.offsetWidth;
+  flash.classList.add("active");
+
+  // 2 秒後主角漸漸出現
+  canvas.style.opacity = "1";
+
+  // 4 秒後才開始走路
+  setTimeout(() => {
     player.state = "walking";
-
+    gameStarted = true;
     showDialogue("主角：電腦好像被入侵了……");
-  }
+  }, 4000);
+}
+
 
   // ====================================
   // 主角自動走路與撿拾
@@ -704,7 +747,19 @@ function confirmSuspect() {
 
     drawRoom();
     updatePlayer();
-    drawPlayer();
+   
+if (!gameStarted && player.state === "idle") {
+  const flash = document.getElementById("flash");
+
+  if (flash.classList.contains("active")) {
+    const elapsed = performance.now() - transitionStart;
+    ctx.globalAlpha = Math.min(1, Math.max(0, (elapsed - 1500) / 1500));
+  }
+}
+
+drawPlayer();
+ctx.globalAlpha = 1;
+
 
     requestAnimationFrame(gameLoop);
   }
