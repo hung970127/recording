@@ -352,9 +352,10 @@ function startOpening() {
   function drawRoom() {
 
     // 地板
-    rectangle(0, 0, 960, 540, "#273448");
+  rectangle(0, 0, 960, 540, "#111827");
 
-    // 地板磁磚
+   
+    // 深夜宿舍地板
     for (let x = 0; x < 960; x += 48) {
       for (let y = 0; y < 540; y += 48) {
         rectangle(
@@ -363,15 +364,26 @@ function startOpening() {
           44,
           44,
           (x + y) % 96 === 0
-            ? "#304057"
-            : "#29384d"
+            ? "#1c2940"
+            : "#172238"
         );
+
+        // 地板細節
+        rectangle(x + 6, y + 6, 10, 2, "#23334b");
+        rectangle(x + 28, y + 34, 12, 2, "#101b2d");
       }
     }
 
+
     // 後方牆壁
-    rectangle(0, 0, 960, 110, "#20283f");
-    rectangle(0, 105, 960, 8, "#65718a");
+
+rectangle(0, 0, 960, 110, "#101625");
+rectangle(0, 105, 960, 8, "#34465c");
+
+// 牆面裝飾線條
+rectangle(0, 25, 960, 2, "#1b2940");
+rectangle(0, 75, 960, 2, "#1b2940");
+
 
     // 左側上舖
     rectangle(45, 135, 280, 100, "#79583e");
