@@ -437,11 +437,37 @@ rectangle(0, 75, 960, 2, "#1b2940");
     rectangle(660, 330, 15, 85, "#70513e");
     rectangle(850, 330, 15, 85, "#70513e");
 
-    // 被駭客入侵的電腦
-    rectangle(715, 245, 110, 65, "#0b1220");
-    rectangle(723, 253, 94, 49, "#143b3d");
+   
+    // 被駭客入侵的電腦：青綠色螢幕光
+    const glow = 0.75 + Math.sin(Date.now() / 350) * 0.15;
 
-    text("HACKED", 733, 280, 15, "#8cf5d6");
+    // 螢幕周圍的光暈
+    const light = ctx.createRadialGradient(
+      770, 280, 10,
+      770, 280, 175
+    );
+    light.addColorStop(0, `rgba(0, 255, 210, ${0.20 * glow})`);
+    light.addColorStop(1, "rgba(0, 255, 210, 0)");
+
+    ctx.fillStyle = light;
+    ctx.fillRect(590, 125, 360, 340);
+
+    // 電腦外框
+    rectangle(715, 245, 110, 65, "#080f1c");
+    rectangle(720, 250, 100, 55, "#294858");
+
+    // 螢幕
+    rectangle(724, 254, 92, 47, "#073c40");
+
+    // 螢幕上的程式碼
+    rectangle(731, 263, 48, 2, "#35c9a8");
+    rectangle(731, 269, 67, 2, "#1e806f");
+    rectangle(731, 291, 56, 2, "#35c9a8");
+
+    // HACKED 文字閃爍
+    if (Math.sin(Date.now() / 180) > -0.4) {
+      text("HACKED", 733, 284, 15, "#8cf5d6");
+    }
 
     // 書桌燈
     rectangle(675, 270, 10, 40, "#b6a58c");
