@@ -1,0 +1,664 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HACKER：音樂追緝</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #080c18;
+      color: white;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    #game {
+      position: relative;
+      width: min(100vw, 177.78vh);
+      aspect-ratio: 16 / 9;
+      background: #151d32;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 12, 25, 0.94);
+      padding: 30px;
+      text-align: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    h1 {
+      font-size: clamp(24px, 4vw, 48px);
+      color: #92d8ff;
+    }
+
+    h2 {
+      color: #e9d6a7;
+    }
+
+    button {
+      padding: 12px 22px;
+      margin: 8px;
+      border: 2px solid #91c8ee;
+      background: #263954;
+      color: white;
+      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #426b91;
+    }
+
+    #dialogue {
+      position: absolute;
+      bottom: 4%;
+      left: 8%;
+      width: 84%;
+      padding: 18px;
+      background: rgba(9, 15, 30, 0.95);
+      border: 3px solid #9abbd1;
+      font-size: clamp(12px, 2vw, 20px);
+      display: none;
+    }
+
+    .clues {
+      display: flex;
+      gap: 20px;
+      width: 90%;
+      justify-content: center;
+    }
+
+    .clue {
+      width: 45%;
+      min-height: 180px;
+      padding: 20px;
+      background: #e6ddc7;
+      color: #252332;
+      border: 5px solid #9e8a6d;
+    }
+
+    .suspects {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 85%;
+    }
+
+    .suspect {
+      padding: 10px;
+      background: #202c43;
+      border: 2px solid #647b9c;
+    }
+
+    .suspect.selected {
+      border-color: #ffe18c;
+      background: #3b4963;
+    }
+
+    .suspect button {
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    #resultText {
+      font-size: 22px;
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="game">
+
+  <canvas id="canvas" width="960" height="540"></canvas>
+
+  <div id="dialogue"></div>
+
+  <!-- 開始畫面 -->
+  <div id="start" class="screen active">
+    <h1>HACKER</h1>
+    <h2>音樂追緝</h2>
+    <p>北藝大綜合宿舍發生神祕的駭客事件</p>
+    <button onclick="startGame()">開始調查</button>
+  </div>
+
+  <!-- 兩個線索同時顯示 -->
+  <div id="clueScreen" class="screen">
+    <h2>發現神祕線索</h2>
+
+    <div class="clues">
+
+      <div class="clue">
+        <h2>✉ 信封</h2>
+        <p>線索一</p>
+        <p>調性：E 小調</p>
+        <p>這裡可以放你們真正的謎題</p>
+      </div>
+
+      <div class="clue">
+        <h2>⚿ 鑰匙與便條紙</h2>
+        <p>線索二</p>
+        <p>這裡可以放節奏或旋律提示</p>
+        <p>讓觀眾還原駭客的樂譜</p>
+      </div>
+
+    </div>
+
+    <button onclick="showSuspects()">
+      繼續調查
+    </button>
+  </div>
+
+  <!-- 嫌疑人選擇 -->
+  <div id="suspectScreen" class="screen">
+    <h2>找出真正的駭客</h2>
+    <p>請聆聽四位嫌疑人的專屬音樂</p>
+
+    <div class="suspects" id="suspectList"></div>
+
+    <button onclick="confirmSuspect()">
+      確認指認
+    </button>
+  </div>
+
+  <!-- 結局 -->
+  <div id="resultScreen" class="screen">
+    <h1>調查結果</h1>
+    <div id="resultText"></div>
+    <button onclick="showSuspects()">重新選擇</button>
+    <button onclick="location.reload()">重新開始</button>
+  </div>
+
+</div>
+
+<script>
+  // ====================================
+  // 基本設定
+  // ====================================
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  ctx.imageSmoothingEnabled = false;
+
+  const dialogue = document.getElementById("dialogue");
+
+  let gameStarted = false;
+  let animationTime = 0;
+  let selectedSuspect = -1;
+  let currentAudio = null;
+
+  // 真正的駭客是羅思穎，編號 0
+  const correctSuspect = 0;
+
+  const suspects = [
+    {
+      name: "羅思穎",
+      instrument: "電子音樂",
+      audio: "music/hacker.mp3"
+    },
+    {
+      name: "許宸瑋",
+      instrument: "中提琴",
+      audio: "music/viola.mp3"
+    },
+    {
+      name: "周裕軒",
+      instrument: "人聲",
+      audio: "music/vocal.mp3"
+    },
+    {
+      name: "洪昕妤",
+      instrument: "木吉他",
+      audio: "music/guitar.mp3"
+    }
+  ];
+
+  // ====================================
+  // 畫圖工具
+  // ====================================
+
+  function rectangle(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      Math.round(x),
+      Math.round(y),
+      w,
+      h
+    );
+  }
+
+  function text(str, x, y, size, color) {
+    ctx.fillStyle = color;
+    ctx.font = size + "px monospace";
+    ctx.fillText(str, x, y);
+  }
+
+  // ====================================
+  // 繪製 2D 宿舍
+  // ====================================
+
+  function drawRoom() {
+
+    // 地板
+    rectangle(0, 0, 960, 540, "#273448");
+
+    // 地板磁磚
+    for (let x = 0; x < 960; x += 48) {
+      for (let y = 0; y < 540; y += 48) {
+        rectangle(
+          x + 2,
+          y + 2,
+          44,
+          44,
+          (x + y) % 96 === 0
+            ? "#304057"
+            : "#29384d"
+        );
+      }
+    }
+
+    // 後方牆壁
+    rectangle(0, 0, 960, 110, "#20283f");
+    rectangle(0, 105, 960, 8, "#65718a");
+
+    // 左側上舖
+    rectangle(45, 135, 280, 100, "#79583e");
+    rectangle(58, 145, 255, 75, "#9babbc");
+    rectangle(65, 150, 65, 60, "#e1d9c8");
+
+    // 左側床架
+    rectangle(45, 230, 18, 160, "#6b4a35");
+    rectangle(307, 230, 18, 160, "#6b4a35");
+
+    // 左側書桌
+    rectangle(65, 310, 235, 20, "#9b7351");
+    rectangle(80, 330, 15, 85, "#70513e");
+    rectangle(275, 330, 15, 85, "#70513e");
+
+    // 左側電腦
+    rectangle(140, 255, 100, 60, "#111827");
+    rectangle(148, 263, 84, 44, "#357c87");
+    rectangle(165, 278, 45, 4, "#a2e3d9");
+
+    // 中央木製階梯
+    for (let i = 0; i < 5; i++) {
+      rectangle(
+        390,
+        125 + i * 48,
+        155,
+        35,
+        "#8b664b"
+      );
+
+      rectangle(
+        390,
+        157 + i * 48,
+        155,
+        8,
+        "#4f382e"
+      );
+    }
+
+    // 右側上舖
+    rectangle(620, 135, 280, 100, "#79583e");
+    rectangle(635, 145, 250, 75, "#8d9cac");
+    rectangle(640, 150, 65, 60, "#ded6c4");
+
+    // 右側床架
+    rectangle(620, 230, 18, 160, "#6b4a35");
+    rectangle(882, 230, 18, 160, "#6b4a35");
+
+    // 右側書桌
+    rectangle(645, 310, 230, 20, "#9b7351");
+    rectangle(660, 330, 15, 85, "#70513e");
+    rectangle(850, 330, 15, 85, "#70513e");
+
+    // 被駭客入侵的電腦
+    rectangle(715, 245, 110, 65, "#0b1220");
+    rectangle(723, 253, 94, 49, "#143b3d");
+
+    text("HACKED", 733, 280, 15, "#8cf5d6");
+
+    // 書桌燈
+    rectangle(675, 270, 10, 40, "#b6a58c");
+    rectangle(660, 255, 35, 18, "#e9ca84");
+
+    // 地毯
+    rectangle(330, 410, 300, 95, "#45516b");
+    rectangle(345, 425, 270, 65, "#56627d");
+
+    // 地上的信封與鑰匙
+    rectangle(590, 435, 40, 26, "#e6d8b2");
+    rectangle(600, 445, 20, 3, "#8b735b");
+
+    rectangle(645, 450, 25, 6, "#d6b55d");
+    rectangle(643, 444, 12, 12, "#d6b55d");
+    rectangle(647, 447, 5, 5, "#45516b");
+
+    // 提示光點
+    if (Math.floor(Date.now() / 400) % 2 === 0) {
+      text("!", 605, 425, 24, "#ffe08a");
+    }
+  }
+
+  // ====================================
+  // 主角
+  // ====================================
+
+  const player = {
+    x: 120,
+    y: 400,
+    targetX: 575,
+    speed: 2.2,
+    state: "walking"
+  };
+
+  function drawPlayer() {
+
+    const x = player.x;
+    const y = player.y;
+
+    // 影子
+    rectangle(x + 3, y + 58, 38, 8, "#17202e");
+
+    // 頭髮
+    rectangle(x + 8, y, 27, 17, "#25202d");
+
+    // 臉
+    rectangle(x + 11, y + 12, 23, 20, "#e1b18e");
+
+    // 眼睛
+    rectangle(x + 27, y + 19, 4, 4, "#222331");
+
+    // 衣服
+    rectangle(x + 5, y + 32, 36, 25, "#718eb3");
+
+    // 背包
+    rectangle(x, y + 35, 9, 23, "#4b536a");
+
+    // 腳
+    let legOffset = 0;
+
+    if (player.state === "walking") {
+      legOffset = Math.sin(animationTime * 0.2) * 5;
+    }
+
+    rectangle(
+      x + 10,
+      y + 57,
+      10,
+      15 + legOffset,
+      "#273044"
+    );
+
+    rectangle(
+      x + 27,
+      y + 57,
+      10,
+      15 - legOffset,
+      "#273044"
+    );
+  }
+
+  // ====================================
+  // 對話
+  // ====================================
+
+  function showDialogue(message) {
+    dialogue.style.display = "block";
+    dialogue.textContent = message;
+  }
+
+  function hideDialogue() {
+    dialogue.style.display = "none";
+  }
+
+  // ====================================
+  // 開始遊戲
+  // ====================================
+
+  function hideAllScreens() {
+    document.querySelectorAll(".screen").forEach(
+      screen => screen.classList.remove("active")
+    );
+  }
+
+  function startGame() {
+    hideAllScreens();
+
+    gameStarted = true;
+    animationTime = 0;
+
+    player.x = 120;
+    player.state = "walking";
+
+    showDialogue("主角：電腦好像被入侵了……");
+  }
+
+  // ====================================
+  // 主角自動走路與撿拾
+  // ====================================
+
+  let clueShown = false;
+
+  function updatePlayer() {
+
+    if (!gameStarted) return;
+
+    animationTime++;
+
+    if (player.state === "walking") {
+
+      player.x += player.speed;
+
+      if (player.x >= player.targetX) {
+        player.x = player.targetX;
+        player.state = "investigating";
+
+        showDialogue(
+          "主角：奇怪……地上怎麼有東西？"
+        );
+      }
+    }
+
+    if (player.state === "investigating") {
+
+      if (animationTime > 260) {
+        player.state = "picking";
+        showDialogue("主角：這是什麼線索？");
+      }
+    }
+
+    if (player.state === "picking") {
+
+      if (animationTime > 340 && !clueShown) {
+        clueShown = true;
+        player.state = "finished";
+
+        hideDialogue();
+
+        setTimeout(showClues, 800);
+      }
+    }
+  }
+
+  // ====================================
+  // 同時顯示兩個線索
+  // ====================================
+
+  function showClues() {
+    gameStarted = false;
+    hideAllScreens();
+
+    document
+      .getElementById("clueScreen")
+      .classList.add("active");
+  }
+
+  // ====================================
+  // 四位嫌疑人
+  // ====================================
+
+  function showSuspects() {
+
+    hideAllScreens();
+
+    document
+      .getElementById("suspectScreen")
+      .classList.add("active");
+
+    const list = document.getElementById("suspectList");
+
+    list.innerHTML = "";
+
+    suspects.forEach((suspect, index) => {
+
+      const card = document.createElement("div");
+
+      card.className = "suspect";
+
+      if (selectedSuspect === index) {
+        card.classList.add("selected");
+      }
+
+      const title = document.createElement("h3");
+      title.textContent = suspect.name;
+
+      const instrument = document.createElement("p");
+      instrument.textContent = suspect.instrument;
+
+      const playButton = document.createElement("button");
+      playButton.textContent = "▶ 試聽音樂";
+      playButton.onclick = () => playMusic(index);
+
+      const selectButton = document.createElement("button");
+      selectButton.textContent =
+        selectedSuspect === index ? "✓ 已選擇" : "指認此人";
+
+      selectButton.onclick = () => {
+        selectedSuspect = index;
+        showSuspects();
+      };
+
+      card.appendChild(title);
+      card.appendChild(instrument);
+      card.appendChild(playButton);
+      card.appendChild(selectButton);
+
+      list.appendChild(card);
+    });
+  }
+
+  // ====================================
+  // 播放音樂
+  // ====================================
+
+  function playMusic(index) {
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+
+    currentAudio = new Audio(suspects[index].audio);
+
+    currentAudio.play().catch(() => {
+      alert(
+        "尚未找到音樂檔案，請先加入：" +
+        suspects[index].audio
+      );
+    });
+  }
+
+  // ====================================
+  // 確認駭客身分
+  // ====================================
+
+  function confirmSuspect() {
+
+    if (selectedSuspect === -1) {
+      alert("請先選擇一位嫌疑人！");
+      return;
+    }
+
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+
+    hideAllScreens();
+
+    document
+      .getElementById("resultScreen")
+      .classList.add("active");
+
+    const result = document.getElementById("resultText");
+
+    if (selectedSuspect === correctSuspect) {
+
+      result.innerHTML =
+        "ACCESS GRANTED<br><br>" +
+        "成功找出真正的駭客！<br>" +
+        "駭客身分：" +
+        suspects[correctSuspect].name;
+
+    } else {
+
+      result.innerHTML =
+        "ACCESS DENIED<br><br>" +
+        "指認錯誤！<br>" +
+        "真正的駭客仍然逍遙法外……";
+    }
+  }
+
+  // ====================================
+  // 遊戲主迴圈
+  // ====================================
+
+  function gameLoop() {
+
+    ctx.clearRect(0, 0, 960, 540);
+
+    drawRoom();
+    updatePlayer();
+    drawPlayer();
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // 初始化
+  gameLoop();
+
+</script>
+
+</body>
+</html>
