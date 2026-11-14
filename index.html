@@ -415,15 +415,48 @@ function drawRoom() {
   rectangle(160, 286, 35, 2, "#418c9b");
   rectangle(187, 316, 10, 8, "#414451");
 
-  // ===== 中央階梯 =====
-  for (let i = 0; i < 5; i++) {
-    const sy = 125 + i * 48;
 
-    rectangle(390, sy, 155, 35, "#5b4850");
-    rectangle(390, sy, 155, 6, "#a17a68");
-    rectangle(390, sy + 29, 155, 7, "#332d39");
-    rectangle(399, sy + 11, 137, 2, "#725961");
+
+  // ===== 中央木製階梯（依照宿舍照片）=====
+
+  const stairX = 390;
+  const stairBottom = 405;
+  const stepW = 155;
+  const stepH = 48;
+
+  // 階梯側面深色結構
+  rectangle(390, 165, 155, 240, "#49382b");
+
+  // 五階木製階梯
+  for (let i = 0; i < 5; i++) {
+    const y = stairBottom - (i + 1) * stepH;
+
+    // 木製階梯正面
+    rectangle(stairX, y, stepW, stepH, "#a98255");
+
+    // 踏板上緣
+    rectangle(stairX - 3, y, stepW + 6, 8, "#d5b17c");
+
+    // 踏板受光面
+    rectangle(stairX, y + 8, stepW, 4, "#bb9566");
+
+    // 階梯正面陰影
+    rectangle(stairX, y + stepH - 8, stepW, 8, "#755638");
+
+    // 木紋
+    rectangle(stairX + 15, y + 23, 65, 2, "#bd9868");
+    rectangle(stairX + 90, y + 34, 45, 2, "#8c6b49");
+
+    // 左右邊框
+    rectangle(stairX, y + 8, 5, stepH - 8, "#806044");
+    rectangle(stairX + stepW - 5, y + 8, 5, stepH - 8, "#806044");
   }
+
+
+  // 梯腳
+  rectangle(422, 398, 18, 7, "#1b2433");
+  rectangle(518, 398, 18, 7, "#1b2433");
+
 
   // ===== 右側上舖 =====
   rectangle(617, 133, 286, 105, "#352c37");
