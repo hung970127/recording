@@ -139,6 +139,21 @@
 
 <div id="game">
 
+<div id="videoScreen" class="screen">
+  <video
+    id="storyVideo"
+    playsinline
+    style="width:100%;height:100%;object-fit:contain;"
+  ></video>
+
+  <button
+    onclick="skipCurrentVideo()"
+    style="position:absolute;right:20px;bottom:20px;"
+  >
+    跳過影片
+  </button>
+</div>
+  
   <canvas id="canvas" width="960" height="540"></canvas>
 
   <div id="dialogue"></div>
@@ -148,7 +163,7 @@
     <h1>HACKER</h1>
     <h2>音樂追緝</h2>
     <p>北藝大綜合宿舍發生神祕的駭客事件</p>
-    <button onclick="startGame()">開始調查</button>
+    <button onclick="startOpening()">開始遊戲</button>
   </div>
 
   <!-- 兩個線索同時顯示 -->
@@ -205,6 +220,48 @@
   // 基本設定
   // ====================================
 
+ const storyVideo = document.getElementById("storyVideo");
+
+let videoNextAction = null;
+
+function playStoryVideo(filename, nextAction) {
+  hideAllScreens();
+
+  document.getElementById("videoScreen")
+    .classList.add("active");
+
+  videoNextAction = nextAction;
+
+  storyVideo.src = filename;
+  storyVideo.currentTime = 0;
+  storyVideo.play();
+}
+
+function finishCurrentVideo() {
+  storyVideo.pause();
+  storyVideo.removeAttribute("src");
+  storyVideo.load();
+
+  const next = videoNextAction;
+  videoNextAction = null;
+
+  if (next) next();
+}
+
+function skipCurrentVideo() {
+  finishCurrentVideo();
+}
+
+storyVideo.addEventListener("ended", finishCurrentVideo);
+
+function startOpening() {
+  playStoryVideo("videos/opening.mp4", () => {
+    playStoryVideo("videos/hacker.mp4", () => {
+      startGame();
+    });
+  });
+}
+  
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
@@ -604,41 +661,47 @@
   // 確認駭客身分
   // ====================================
 
-  function confirmSuspect() {
+ const storyVideo = document.getElementById("storyVideo");
 
-    if (selectedSuspect === -1) {
-      alert("請先選擇一位嫌疑人！");
-      return;
-    }
+let videoNextAction = null;
 
-    if (currentAudio) {
-      currentAudio.pause();
-    }
+function playStoryVideo(filename, nextAction) {
+  hideAllScreens();
 
-    hideAllScreens();
+  document.getElementById("videoScreen")
+    .classList.add("active");
 
-    document
-      .getElementById("resultScreen")
-      .classList.add("active");
+  videoNextAction = nextAction;
 
-    const result = document.getElementById("resultText");
+  storyVideo.src = filename;
+  storyVideo.currentTime = 0;
+  storyVideo.play();
+}
 
-    if (selectedSuspect === correctSuspect) {
+function finishCurrentVideo() {
+  storyVideo.pause();
+  storyVideo.removeAttribute("src");
+  storyVideo.load();
 
-      result.innerHTML =
-        "ACCESS GRANTED<br><br>" +
-        "成功找出真正的駭客！<br>" +
-        "駭客身分：" +
-        suspects[correctSuspect].name;
+  const next = videoNextAction;
+  videoNextAction = null;
 
-    } else {
+  if (next) next();
+}
 
-      result.innerHTML =
-        "ACCESS DENIED<br><br>" +
-        "指認錯誤！<br>" +
-        "真正的駭客仍然逍遙法外……";
-    }
-  }
+function skipCurrentVideo() {
+  finishCurrentVideo();
+}
+
+storyVideo.addEventListener("ended", finishCurrentVideo);
+
+function startOpening() {
+  playStoryVideo("videos/opening.mp4", () => {
+    playStoryVideo("videos/hacker.mp4", () => {
+      startGame();
+    });
+  });
+}
 
   // ====================================
   // 遊戲主迴圈
