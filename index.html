@@ -484,6 +484,40 @@ function startOpening() {
   let selectedSuspect = -1;
   let currentAudio = null;
 
+// 音樂淡入淡出（預設 2 秒）
+const fadeTimers = new WeakMap();
+
+function fadeAudio(audio, from, to, duration = 2000, onComplete = null) {
+  if (!audio) return;
+
+  // 取消同一首音樂正在進行的淡入淡出
+  if (fadeTimers.has(audio)) {
+    clearInterval(fadeTimers.get(audio));
+  }
+
+  const start = performance.now();
+  audio.volume = from;
+
+  const timer = setInterval(() => {
+    const progress = Math.min(
+      (performance.now() - start) / duration, 1
+    );
+
+    audio.volume = Math.max(
+      0,
+      Math.min(1, from + (to - from) * progress)
+    );
+
+    if (progress >= 1) {
+      clearInterval(timer);
+      fadeTimers.delete(audio);
+      if (onComplete) onComplete();
+    }
+  }, 30);
+
+  fadeTimers.set(audio, timer);
+}
+  
 const puzzleMusic = new Audio("music/puzzle.mp3");
 puzzleMusic.loop = true;
 puzzleMusic.volume = 0.3;
@@ -1073,26 +1107,55 @@ puzzleMusic.play().catch(err => {
 
 function playMusic(index) {
 
-  // 暫停解謎背景音樂
-  puzzleMusic.pause();
+  // 解謎音樂淡出
+  fadeAudio(
+    puzzleMusic,
+    puzzleMusic.volume,
+    0,
+    2000,
+    () => puzzleMusic.pause()
+  );
 
-  // 停止上一位嫌疑犯的音樂
+  // 上一位嫌疑犯音樂淡出
   if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
+    const oldAudio = currentAudio;
+
+    oldAudio.onended = null;
+
+    fadeAudio(
+      oldAudio,
+      oldAudio.volume,
+      0,
+      2000,
+      () => {
+        oldAudio.pause();
+        oldAudio.currentTime = 0;
+      }
+    );
   }
 
-  // 播放目前嫌疑犯的音樂
-  currentAudio = new Audio(suspects[index].audio);
+  // 新嫌疑犯音樂淡入
+  const newAudio = new Audio(suspects[index].audio);
+  currentAudio = newAudio;
 
-  currentAudio.play().catch(() => {
-    alert("尚未找到音樂檔案：" + suspects[index].audio);
-    puzzleMusic.play().catch(console.error);
+  newAudio.volume = 0;
+
+  newAudio.play().then(() => {
+    fadeAudio(newAudio, 0, 1, 2000);
+  }).catch(() => {
+    alert("找不到音樂：" + suspects[index].audio);
   });
 
-  // 試聽結束後恢復背景音樂
-  currentAudio.onended = () => {
-    puzzleMusic.play().catch(console.error);
+  // 試聽結束後，解謎音樂淡入
+  newAudio.onended = () => {
+    if (currentAudio !== newAudio) return;
+
+    currentAudio = null;
+
+    puzzleMusic.volume = 0;
+    puzzleMusic.play().then(() => {
+      fadeAudio(puzzleMusic, 0, 0.3, 2000);
+    }).catch(console.error);
   };
 }
 
