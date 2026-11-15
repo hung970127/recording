@@ -144,6 +144,25 @@ button:disabled {
 
 <p id="message"></p>
 
+<div id="votingEndedScreen" style="
+  display:none;
+  max-width:500px;
+  margin:40px auto;
+  padding:35px 20px;
+  background:#141e30;
+  border:2px solid #92d8ff;
+  border-radius:14px;
+">
+  <h1>🔒 投票已結束</h1>
+  <p style="font-size:18px;line-height:1.8;">
+    本次調查已經結束<br>
+    感謝你的參與！
+  </p>
+  <p style="color:#ffe18c;">
+    請觀看前方螢幕，等待調查結果公布。
+  </p>
+</div>
+
 <script type="module">
 
 import { initializeApp } from
@@ -349,6 +368,25 @@ function updateButtons() {
 }
 
 function updateTimer() {
+ 
+  const ended = sessionConfig && (
+    sessionConfig.status === "closed" ||
+    serverNow() >= sessionConfig.endsAt
+  );
+
+  $("votingEndedScreen").style.display = ended ? "block" : "none";
+  $("suspects").style.display = ended ? "none" : "grid";
+  $("submitBtn").style.display = ended ? "none" : "block";
+  $("timer").style.display = ended ? "none" : "block";
+  $("status").style.display = ended ? "none" : "block";
+  $("message").style.display = ended ? "none" : "block";
+
+  if (ended && !audioPlayer.paused) {
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    playingIndex = -1;
+  }
+
   if (!sessionConfig) {
     $("timer").textContent = "05:00";
     updateButtons();
