@@ -1080,7 +1080,6 @@ bunk(557,true);
 let transitionStart = 0;
  function startGame() {
   hideAllScreens();
-  startTimer();
 
 puzzleMusic.currentTime = 0;
 puzzleMusic.play().catch(err => {
@@ -1167,15 +1166,18 @@ puzzleMusic.play().catch(err => {
   // 同時顯示兩個線索
   // ====================================
 
-  function showClues() {
-    gameStarted = false;
-    hideAllScreens();
+function showClues() {
+  if (gameOver) return;
 
-    document
-      .getElementById("clueScreen")
-      .classList.add("active");
-  }
+  gameStarted = false;
+  hideAllScreens();
 
+  document
+    .getElementById("clueScreen")
+    .classList.add("active");
+
+  startTimer();
+}
   // ====================================
   // 四位嫌疑人
   // ====================================
