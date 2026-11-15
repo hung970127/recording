@@ -242,13 +242,15 @@
   border-color: #ffe18c;
 }
     
-    .suspects {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      width: 85%;
-    }
-
+.suspects {
+  display: grid;
+  grid-template-columns: repeat(4, 180px);
+  gap: 16px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  justify-content: center;
+}
     .suspect {
       padding: 10px;
       background: #202c43;
