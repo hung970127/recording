@@ -1214,28 +1214,34 @@ function drawRoom() {
     r(foldX, 181, 12, 27, blanketDark);
     r(foldX + 2, 184, 3, 18, blanketLight);
 
-    // 床頭木製橫樑
-    wood(x + 12, 125, 255, 11);
+   
+    // ===== 床鋪安全護欄：靠樓梯一端保留入口 =====
+    // 左床右端、右床左端各留 65px 入口
+    const railX = mirror ? x + 78 : x + 12;
+    const railW = 189;
 
-    // 前方護欄下緣
-    wood(x + 12, 203, 255, 13);
+    // 上下橫樑
+    wood(railX, 125, railW, 11);
+    wood(railX, 203, railW, 13);
 
-    // 護欄垂直木條
-    for (let i = 0; i < 6; i++) {
-      const px = x + 24 + i * 43;
-
+    // 垂直護欄
+    for (let i = 0; i < 4; i++) {
+      const px = railX + 17 + i * 43;
       r(px, 136, 10, 67, "#694b32");
       r(px + 2, 138, 5, 62, "#b58a5b");
       r(px + 3, 140, 2, 57, "#d8ad78");
-
-      // 木條接合處
       r(px, 137, 10, 3, "#e0b98a");
       r(px, 198, 10, 4, "#523924");
     }
 
-    // 護欄左右端柱
-    wood(x + 12, 119, 13, 98);
-    wood(x + 254, 119, 13, 98);
+    // 外側床頭柱
+    const outerPost = mirror ? x + 254 : x + 12;
+    wood(outerPost, 119, 13, 98);
+
+    // 入口邊緣短柱，不阻擋通道
+    const entrancePost = mirror ? x + 78 : x + 189;
+    wood(entrancePost, 188, 10, 29);
+
 
     // 床架下方支撐橫樑
     r(x + 15, 236, 250, 9, "#483b30");
@@ -1360,92 +1366,151 @@ function drawRoom() {
   r(678,273,29,4,"#f2cf91");
 
  
-  // ===== 左右床鋪與中央樓梯的木製連接平台 =====
+ 
+  // ===== 共用平台 + 五階木樓梯 V5 =====
+  // 左床內側 x=370，右床內側 x=557
+  // 床板上緣 y=211，平台與床板對齊
 
-  // 左側連接平台
-  r(345, 202, 75, 17, "#67462d");
-  r(345, 198, 75, 7, "#c49a69");
-  r(345, 198, 75, 2, "#e7c08a");
-  r(345, 215, 75, 5, "#39291e");
+  const stairCX = 463;
+  const platformY = 211;
 
-  // 左側平台木紋
-  r(355, 207, 42, 2, "#a87b50");
-  r(365, 212, 29, 1, "#503724");
+  // ===== 平台後方陰影 =====
+  r(372, 222, 183, 24, "#17202b");
 
-  // 右側連接平台
-  r(520, 202, 37, 17, "#67462d");
-  r(520, 198, 37, 7, "#c49a69");
-  r(520, 198, 37, 2, "#e7c08a");
-  r(520, 215, 37, 5, "#39291e");
+  // ===== 左右床鋪連接平台 =====
+  // 從左床直接延伸到右床，沒有中斷
+  r(362, platformY, 203, 24, "#533923");
+  r(362, platformY, 203, 6, "#d0a271");
+  r(362, platformY + 6, 203, 13, "#987049");
+  r(362, platformY + 19, 203, 5, "#39291c");
 
-  // 右側平台木紋
-  r(525, 207, 25, 2, "#a87b50");
+  // 平台木板接縫
+  for (let x = 379; x < 565; x += 31) {
+    r(x, 217, 2, 12, "#725033");
+    r(x + 5, 219, 17, 1, "#c39a69");
+  }
 
-  // 左側平台下方支撐
-  r(350, 220, 12, 24, "#5c402a");
-  r(352, 221, 3, 21, "#a47b50");
+  // 平台左右兩側支撐樑
+  r(367, 235, 12, 37, "#503722");
+  r(370, 236, 3, 32, "#a77d51");
 
-  // 右側平台下方支撐
-  r(541, 220, 12, 24, "#5c402a");
-  r(543, 221, 3, 21, "#a47b50");
+  r(546, 235, 12, 37, "#503722");
+  r(549, 236, 3, 32, "#a77d51");
 
+  // ===== 五階樓梯後方主結構 =====
+  ctx.fillStyle = "#49301e";
+  ctx.beginPath();
+  ctx.moveTo(411, 235);
+  ctx.lineTo(515, 235);
+  ctx.lineTo(574, 414);
+  ctx.lineTo(352, 414);
+  ctx.closePath();
+  ctx.fill();
 
-  // ===== 中央木製樓梯 V3：上窄下寬 =====
+  // ===== 五階踏板 =====
+  // 由上往下逐漸加寬，最上階接平台
+  const steps = [
+    { y: 240, w: 112 },
+    { y: 274, w: 134 },
+    { y: 308, w: 156 },
+    { y: 342, w: 178 },
+    { y: 376, w: 200 }
+  ];
 
-  const stairCenter = 470;
-  const stairTop = 174;
-  const stepH = 46;
+  steps.forEach((step, i) => {
+    const x = stairCX - step.w / 2;
+    const y = step.y;
+    const w = step.w;
 
-  // 後方陰影
-  r(376, 176, 188, 237, "#17202b");
+    // 立板
+    r(x, y + 9, w, 30,
+      i % 2 === 0 ? "#94704b" : "#a07a51");
 
-  // 五階樓梯：由上往下逐漸變寬
-  for (let i = 0; i < 5; i++) {
-    const w = 100 + i * 20;
-    const x = stairCenter - w / 2;
-    const y = stairTop + i * stepH;
-
-    // 階梯側邊深色結構
-    r(x - 6, y + 5, w + 12, stepH, "#604630");
-
-    // 階梯正面
-    r(x, y + 9, w, stepH - 9,
-      i % 2 === 0 ? "#a58059" : "#96714d");
-
-    // 踏板頂部
-    r(x - 4, y, w + 8, 12, "#d2aa79");
-
-    // 踏板高光
-    r(x - 2, y + 2, w + 4, 3, "#f0c995");
+    // 立板底部陰影
+    r(x, y + 34, w, 5, "#4b3323");
 
     // 踏板厚度
-    r(x - 4, y + 10, w + 8, 6, "#79583e");
+    r(x - 5, y + 8, w + 10, 7, "#65442c");
+
+    // 踏板頂面
+    r(x - 5, y, w + 10, 9, "#c79a67");
+
+    // 頂面高光
+    r(x - 3, y + 1, w + 6, 3, "#ebc18b");
 
     // 木紋
-    r(x + 15, y + 23, w * 0.35, 2, "#c49a6d");
-    r(x + w * 0.55, y + 32, w * 0.23, 2, "#79593f");
+    r(x + 14, y + 20, w * 0.28, 2, "#ba8b5b");
+    r(x + w * 0.57, y + 27, w * 0.23, 2, "#725033");
 
-    // 階梯底部陰影
-    r(x, y + stepH - 5, w, 5, "#523b2b");
+    // 木板接縫
+    r(x + w * 0.49, y + 16, 2, 15, "#765338");
+  });
+
+  // ===== 樓梯左右側板 =====
+  ctx.strokeStyle = "#51351f";
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.moveTo(405, 236);
+  ctx.lineTo(350, 412);
+  ctx.moveTo(521, 236);
+  ctx.lineTo(576, 412);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#a87a4c";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(405, 236);
+  ctx.lineTo(350, 412);
+  ctx.moveTo(521, 236);
+  ctx.lineTo(576, 412);
+  ctx.stroke();
+
+  // ===== 左右扶手 =====
+  function drawStairRail(topX, bottomX) {
+
+    // 直立支柱
+    for (let i = 0; i < 5; i++) {
+      const t = i / 4;
+      const x = topX + (bottomX - topX) * t;
+      const y = 218 + 34 * i;
+
+      r(x - 5, y, 11, 51, "#65452d");
+      r(x - 3, y + 2, 3, 46, "#b58a5d");
+      r(x - 6, y - 3, 13, 6, "#d6a675");
+    }
+
+    // 斜向扶手深色外框
+    ctx.strokeStyle = "#49301e";
+    ctx.lineWidth = 16;
+    ctx.beginPath();
+    ctx.moveTo(topX, 216);
+    ctx.lineTo(bottomX, 352);
+    ctx.stroke();
+
+    // 木質扶手
+    ctx.strokeStyle = "#b88b5a";
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(topX, 216);
+    ctx.lineTo(bottomX, 352);
+    ctx.stroke();
+
+    // 扶手亮面
+    ctx.strokeStyle = "#e6ba83";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(topX, 214);
+    ctx.lineTo(bottomX, 350);
+    ctx.stroke();
   }
 
-  // 左右側板：跟著樓梯逐漸向外展開
-  for (let i = 0; i < 5; i++) {
-    const w = 100 + i * 20;
-    const x = stairCenter - w / 2;
-    const y = stairTop + i * stepH;
+  drawStairRail(406, 345);
+  drawStairRail(520, 581);
 
-    r(x - 9, y + 3, 9, stepH, "#765539");
-    r(x + w, y + 3, 9, stepH, "#765539");
+  // ===== 最下方與地板交接 =====
+  r(353, 409, 220, 8, "#49301f");
+  r(358, 409, 210, 3, "#bc8c5c");
 
-    // 側板木頭高光
-    r(x - 7, y + 4, 2, stepH - 4, "#bd9263");
-    r(x + w + 2, y + 4, 2, stepH - 4, "#bd9263");
-  }
-
-  // 樓梯底部收邊
-  r(370, 404, 200, 10, "#523b2c");
-  r(376, 404, 188, 3, "#b68c61");
 
   // ===== 地毯 =====
   r(332,417,295,91,"#263348");
