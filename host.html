@@ -1,1 +1,298 @@
 
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>駭客在哪裡｜主持人控制台</title>
+  <style>
+    body {
+      background: #080c18;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+      padding: 30px 15px;
+    }
+    h1 { color: #92d8ff; }
+    input, button {
+      display: block;
+      box-sizing: border-box;
+      width: min(100%, 350px);
+      margin: 12px auto;
+      padding: 13px;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+    button {
+      background: #263954;
+      border: 2px solid #91c8ee;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    #timer {
+      font-size: 48px;
+      color: #ffe18c;
+      margin: 25px;
+    }
+    #status, #message {
+      margin: 15px;
+      line-height: 1.7;
+    }
+    #results {
+      max-width: 420px;
+      margin: 25px auto;
+      text-align: left;
+    }
+    .result {
+      padding: 12px;
+      border-bottom: 1px solid #647b9c;
+    }
+    #panel { display: none; }
+  </style>
+</head>
+<body>
+
+  <h1>駭客在哪裡？</h1>
+  <h2>主持人控制台</h2>
+
+  <div id="login">
+    <input id="email" type="email" placeholder="主持人電子郵件">
+    <input id="password" type="password" placeholder="密碼">
+    <button id="loginBtn">登入</button>
+  </div>
+
+  <div id="panel">
+    <p id="status">尚未開始投票</p>
+    <div id="timer">05:00</div>
+
+    <button id="startBtn">開始新的五分鐘投票</button>
+    <button id="closeBtn" disabled>關閉本場投票</button>
+    <button id="resultBtn" disabled>公布投票結果</button>
+
+    <div id="results"></div>
+    <button id="logoutBtn">登出</button>
+  </div>
+
+  <p id="message"></p>
+
+  <script type="module">
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+
+    import {
+      getDatabase,
+      ref,
+      set,
+      get,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+    import {
+      firebaseConfig,
+      ADMIN_UID
+    } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let sessionId = null;
+    let sessionConfig = null;
+    let timerInterval = null;
+    let unsubscribe = null;
+
+    const $ = id => document.getElementById(id);
+
+    function message(text) {
+      $("message").textContent = text;
+    }
+
+    $("loginBtn").onclick = async () => {
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          $("email").value.trim(),
+          $("password").value
+        );
+      } catch (error) {
+        message("登入失敗：" + error.message);
+      }
+    };
+
+    onAuthStateChanged(auth, user => {
+      const isAdmin = user && user.uid === ADMIN_UID;
+
+      $("login").style.display = isAdmin ? "none" : "block";
+      $("panel").style.display = isAdmin ? "block" : "none";
+
+      if (user && !isAdmin) {
+        message("這個帳號沒有主持人權限。");
+      } else if (isAdmin) {
+        message("主持人登入成功。");
+      }
+
+      if (!isAdmin) {
+        clearInterval(timerInterval);
+        if (unsubscribe) unsubscribe();
+      }
+    });
+
+    $("startBtn").onclick = async () => {
+      if (!auth.currentUser ||
+          auth.currentUser.uid !== ADMIN_UID) return;
+
+      try {
+        $("startBtn").disabled = true;
+
+        sessionId = "round_" + Date.now();
+
+        const startedAt = Date.now();
+        const endsAt = startedAt + 300000;
+
+        await set(
+          ref(db, "sessions/" + sessionId + "/config"),
+          {
+            startedAt,
+            endsAt,
+            status: "open"
+          }
+        );
+
+        sessionConfig = { startedAt, endsAt, status: "open" };
+
+        $("results").innerHTML = "";
+        $("status").textContent = "投票進行中";
+        $("closeBtn").disabled = false;
+        $("resultBtn").disabled = true;
+
+        if (unsubscribe) unsubscribe();
+
+        unsubscribe = onValue(
+          ref(db, "sessions/" + sessionId + "/config"),
+          snapshot => {
+            sessionConfig = snapshot.val();
+            updateTimer();
+          }
+        );
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 250);
+        updateTimer();
+
+        message("已建立場次：" + sessionId);
+      } catch (error) {
+        $("startBtn").disabled = false;
+        message("開始失敗：" + error.message);
+      }
+    };
+
+    function updateTimer() {
+      if (!sessionConfig) return;
+
+      const seconds = Math.max(
+        0,
+        Math.ceil((sessionConfig.endsAt - Date.now()) / 1000)
+      );
+
+      $("timer").textContent =
+        String(Math.floor(seconds / 60)).padStart(2, "0") +
+        ":" +
+        String(seconds % 60).padStart(2, "0");
+
+      if (seconds === 0 && sessionConfig.status === "open") {
+        closeVoting();
+      }
+    }
+
+    async function closeVoting() {
+      if (!sessionId || !sessionConfig ||
+          sessionConfig.status !== "open") return;
+
+      try {
+        await set(
+          ref(db, "sessions/" + sessionId + "/config"),
+          {
+            ...sessionConfig,
+            status: "closed"
+          }
+        );
+
+        sessionConfig.status = "closed";
+        $("status").textContent = "投票已結束";
+        $("closeBtn").disabled = true;
+        $("resultBtn").disabled = false;
+        $("startBtn").disabled = false;
+
+        clearInterval(timerInterval);
+      } catch (error) {
+        message("關閉失敗：" + error.message);
+      }
+    }
+
+    $("closeBtn").onclick = async () => {
+      if (sessionConfig &&
+          Date.now() < sessionConfig.endsAt) {
+        message("五分鐘尚未結束，不能提前公布。");
+        return;
+      }
+      await closeVoting();
+    };
+
+    $("resultBtn").onclick = async () => {
+      if (!sessionId || !sessionConfig ||
+          sessionConfig.status !== "closed" ||
+          Date.now() < sessionConfig.endsAt) {
+        message("投票尚未正式結束。");
+        return;
+      }
+
+      try {
+        const snapshot = await get(
+          ref(db, "sessions/" + sessionId + "/votes")
+        );
+
+        const votes = snapshot.val() || {};
+        const counts = [0, 0, 0, 0];
+
+        Object.values(votes).forEach(index => {
+          if (Number.isInteger(index) &&
+              index >= 0 && index < 4) {
+            counts[index]++;
+          }
+        });
+
+        const total = counts.reduce((a, b) => a + b, 0);
+
+        $("results").innerHTML = counts.map((count, index) => {
+          const percentage = total
+            ? (count / total * 100).toFixed(1)
+            : "0.0";
+
+          return `<div class="result">
+            嫌疑犯 ${index + 1}：
+            ${count} 票（${percentage}%）
+          </div>`;
+        }).join("");
+
+        message("共收到 " + total + " 張選票。");
+      } catch (error) {
+        message("讀取票數失敗：" + error.message);
+      }
+    };
+
+    $("logoutBtn").onclick = () => signOut(auth);
+  </script>
+</body>
+</html>
+
