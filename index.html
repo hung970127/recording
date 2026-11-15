@@ -1123,57 +1123,145 @@ function drawRoom() {
     r(x+w-3,y,3,h,"#394751");
   }
 
-  // ===== 上舖 =====
-  function bunk(x,mirror=false){
+  
+  // ===== 精緻化左右上舖 V2 =====
+  function bunk(x, mirror = false) {
 
-    // 床下陰影
-    r(x+14,224,256,172,"#111b29");
+    // 床下空間：保留書桌位置
+    r(x + 13, 222, 254, 178, "#111b29");
+    r(x + 18, 239, 244, 5, "#0b1420");
 
-    // 金屬立柱
-    metal(x,115,13,294);
-    metal(x+267,115,13,294);
+    // 牆面與床底的環境陰影
+    r(x + 19, 245, 235, 3, "#1b2938");
+    r(x + 22, 250, 220, 2, "#253346");
 
-    // 床板底部
-    r(x+12,218,255,18,"#514234");
-    r(x+12,218,255,5,"#b38d61");
+    // 四根金屬支柱
+    metal(x, 113, 14, 301);
+    metal(x + 266, 113, 14, 301);
 
-    // 床墊
-    r(x+18,166,244,49,"#8595a7");
-    r(x+18,204,244,10,"#56697c");
-
-    // 枕頭
-    const pillowX=mirror?x+192:x+27;
-    r(pillowX,172,49,29,"#d6d8d3");
-    r(pillowX+4,176,41,21,"#f0e9da");
-    r(pillowX+8,180,32,2,"#ffffff");
-
-    // 棉被
-    const blanketX=mirror?x+25:x+85;
-    r(blanketX,171,154,33,"#506e91");
-    r(blanketX,171,154,5,"#8099b7");
-    r(blanketX+9,188,130,2,"#6882a3");
-    r(blanketX+17,197,110,2,"#405c7c");
-
-    // 木製床欄
-    wood(x+12,126,255,10);
-    wood(x+12,205,255,13);
-
-    for(let i=0;i<6;i++){
-      const px=x+24+i*43;
-      wood(px,136,8,69);
-      r(px+2,139,2,62,"#e0bc8b");
+    // 支柱固定螺絲
+    for (const px of [x + 5, x + 271]) {
+      for (const py of [128, 224, 317, 400]) {
+        r(px, py, 4, 4, "#d1d5d2");
+        r(px + 1, py + 1, 2, 2, "#53616b");
+      }
     }
 
-    // 床欄端柱
-    wood(x+12,120,12,98);
-    wood(x+255,120,12,98);
+    // 床板主體：厚木板
+    r(x + 12, 211, 255, 25, "#493426");
+    r(x + 12, 211, 255, 6, "#bd9567");
+    r(x + 12, 218, 255, 12, "#806044");
+    r(x + 12, 231, 255, 5, "#30251f");
 
-    // 床底橫樑
-    wood(x+14,230,251,10);
+    // 床板木紋
+    for (let i = 0; i < 5; i++) {
+      r(x + 24 + i * 48, 222, 29, 2, "#a27b52");
+      r(x + 35 + i * 45, 228, 18, 1, "#4e3828");
+    }
+
+    // 床墊底層
+    r(x + 18, 158, 244, 55, "#536477");
+    r(x + 20, 158, 240, 7, "#b0b9c1");
+    r(x + 20, 165, 240, 40, "#8c9baa");
+    r(x + 20, 204, 240, 7, "#657588");
+
+    // 床單的細小摺痕
+    for (let i = 0; i < 5; i++) {
+      r(x + 31 + i * 45, 198, 22, 2, "#a8b5bd");
+    }
+
+    // 枕頭：左右鏡像
+    const pillowX = mirror ? x + 193 : x + 27;
+
+    // 枕頭陰影
+    r(pillowX - 2, 170, 56, 34, "#6b7885");
+
+    // 枕頭主體
+    r(pillowX, 166, 52, 33, "#d3d4cf");
+    r(pillowX + 4, 169, 44, 26, "#f0ece1");
+
+    // 枕頭亮面
+    r(pillowX + 8, 171, 32, 3, "#fffaf0");
+    r(pillowX + 7, 190, 37, 2, "#c6c7bf");
+
+    // 枕頭四角的縫線
+    r(pillowX + 3, 174, 2, 16, "#b5b6b0");
+    r(pillowX + 47, 174, 2, 16, "#b5b6b0");
+
+    // 棉被：兩張床使用不同色系
+    const blanketX = mirror ? x + 26 : x + 85;
+    const blanketColor = mirror ? "#4d827d" : "#526f9b";
+    const blanketLight = mirror ? "#7aafa4" : "#829dc0";
+    const blanketDark = mirror ? "#305b59" : "#344f76";
+
+    // 棉被底部陰影
+    r(blanketX + 3, 176, 151, 32, blanketDark);
+
+    // 棉被本體
+    r(blanketX, 168, 154, 34, blanketColor);
+
+    // 翻折的被口
+    r(blanketX, 168, 154, 9, blanketLight);
+    r(blanketX + 5, 175, 144, 3, "#b5c5c5");
+
+    // 自然摺痕
+    r(blanketX + 17, 184, 108, 3, blanketLight);
+    r(blanketX + 29, 192, 94, 2, blanketDark);
+    r(blanketX + 12, 198, 124, 3, blanketDark);
+
+    // 棉被末端下垂的布料
+    const foldX = mirror ? blanketX : blanketX + 142;
+    r(foldX, 181, 12, 27, blanketDark);
+    r(foldX + 2, 184, 3, 18, blanketLight);
+
+    // 床頭木製橫樑
+    wood(x + 12, 125, 255, 11);
+
+    // 前方護欄下緣
+    wood(x + 12, 203, 255, 13);
+
+    // 護欄垂直木條
+    for (let i = 0; i < 6; i++) {
+      const px = x + 24 + i * 43;
+
+      r(px, 136, 10, 67, "#694b32");
+      r(px + 2, 138, 5, 62, "#b58a5b");
+      r(px + 3, 140, 2, 57, "#d8ad78");
+
+      // 木條接合處
+      r(px, 137, 10, 3, "#e0b98a");
+      r(px, 198, 10, 4, "#523924");
+    }
+
+    // 護欄左右端柱
+    wood(x + 12, 119, 13, 98);
+    wood(x + 254, 119, 13, 98);
+
+    // 床架下方支撐橫樑
+    r(x + 15, 236, 250, 9, "#483b30");
+    r(x + 15, 236, 250, 3, "#8d7254");
+
+    // 床底加固斜撐
+    ctx.strokeStyle = "#4a535c";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(x + 14, 244);
+    ctx.lineTo(x + 49, 279);
+    ctx.moveTo(x + 265, 244);
+    ctx.lineTo(x + 230, 279);
+    ctx.stroke();
+
+    // 床架頂部小型金屬接頭
+    r(x, 110, 14, 7, "#a5b1b9");
+    r(x + 266, 110, 14, 7, "#a5b1b9");
   }
 
-  bunk(90,false);
-bunk(557,true);
+  // 左床：藍色棉被
+  bunk(90, false);
+
+  // 右床：青綠色棉被
+  bunk(557, true);
+
 
   // ===== 書桌 =====
   function desk(x){
