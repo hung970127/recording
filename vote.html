@@ -2,297 +2,537 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>駭客在哪裡｜手機投票</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>駭客在哪裡｜匿名投票</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      background: #080c18;
-      color: white;
-      font-family: monospace;
-      text-align: center;
-      padding: 24px 14px 40px;
-    }
+body {
+  margin: 0;
+  padding: 24px 15px 50px;
+  background: #080c18;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
 
-    h1 {
-      color: #92d8ff;
-      font-size: 30px;
-      margin-bottom: 8px;
-    }
+h1 {
+  color: #92d8ff;
+  letter-spacing: 2px;
+}
 
-    .subtitle {
-      color: #c3cfdf;
-      font-size: 14px;
-      line-height: 1.8;
-      margin-bottom: 25px;
-    }
+.subtitle {
+  color: #b8c9dc;
+  line-height: 1.7;
+}
 
-    .suspects {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      max-width: 520px;
-      margin: auto;
-    }
+#timer {
+  font-size: 42px;
+  font-weight: bold;
+  color: #ffe18c;
+  margin: 18px 0;
+}
 
-    .suspect {
-      background: #202c43;
-      border: 2px solid #647b9c;
-      border-radius: 10px;
-      padding: 12px 8px;
-    }
+#status {
+  color: #92d8ff;
+  margin: 15px auto;
+  line-height: 1.7;
+}
 
-    .suspect.selected {
-      border-color: #ffe18c;
-      background: #3b4963;
-    }
+.suspects {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 650px;
+  margin: 25px auto;
+}
 
-    .suspect img {
-      display: block;
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      image-rendering: pixelated;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+.card {
+  border: 2px solid #344965;
+  border-radius: 12px;
+  background: #141e30;
+  padding: 12px;
+}
 
-    .suspect h2 {
-      font-size: 16px;
-      color: #e9d6a7;
-      margin: 12px 0;
-    }
+.card.selected {
+  border-color: #ffe18c;
+  background: #263047;
+}
 
-    button {
-      font-family: inherit;
-      cursor: pointer;
-      background: #263954;
-      border: 2px solid #91c8ee;
-      color: white;
-      border-radius: 6px;
-      padding: 10px;
-      font-size: 14px;
-    }
+.card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #202c3f;
+}
 
-    .play-btn {
-      width: 100%;
-    }
+.card h3 {
+  margin: 12px 0;
+}
 
-    .select-btn {
-      width: 100%;
-      margin-top: 8px;
-    }
+button {
+  border: 1px solid #92d8ff;
+  background: #253a58;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
 
-    .selected .select-btn {
-      background: #806d3b;
-      border-color: #ffe18c;
-    }
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
-    #selection {
-      margin: 24px auto 12px;
-      color: #ffe18c;
-      font-size: 17px;
-      min-height: 24px;
-    }
+.playBtn, .chooseBtn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
 
-    #submitVote {
-      width: min(100%, 350px);
-      padding: 15px;
-      font-size: 18px;
-      background: #355a77;
-    }
+.chooseBtn.selected {
+  background: #876b30;
+  border-color: #ffe18c;
+}
 
-    #submitVote:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+#submitBtn {
+  width: min(100%, 350px);
+  padding: 16px;
+  background: #356b56;
+  border: 2px solid #8cddaf;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px auto;
+}
 
-    #message {
-      color: #c3cfdf;
-      font-size: 13px;
-      line-height: 1.7;
-      margin-top: 15px;
-    }
-  </style>
+#message {
+  line-height: 1.8;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+@media (max-width: 350px) {
+  .suspects {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <h1>駭客在哪裡？</h1>
+<h1>駭客在哪裡？</h1>
 
-  <p class="subtitle">
-    請聆聽四位嫌疑犯的音樂<br>
-    根據大螢幕上的線索找出真正的駭客
-  </p>
+<p class="subtitle">
+聆聽四位嫌疑犯的音樂<br>
+找出真正入侵電腦的駭客
+</p>
 
-  <div class="suspects" id="suspectList"></div>
+<div id="timer">05:00</div>
+<p id="status">正在連線至投票系統……</p>
 
-  <p id="selection">尚未選擇嫌疑犯</p>
+<div class="suspects" id="suspects"></div>
 
-  <button id="submitVote" disabled>
-    送出投票（尚未開放）
-  </button>
+<button id="submitBtn" disabled>
+確認投票
+</button>
 
-  <p id="message">
-    投票系統正在建置中。<br>
-    目前可以試聽音樂及選擇嫌疑犯。
-  </p>
+<p id="message"></p>
 
-  <script>
-    // 與 index.html 使用相同的照片和音樂
+<script type="module">
 
-    const suspects = [
-      {
-        image: "images/JT.png",
-        audio: "music/hacker.mp3"
-      },
-      {
-        image: "images/suspect2.png",
-        audio: "music/viola.mp3"
-      },
-      {
-        image: "images/suspect3.png",
-        audio: "music/vocal.mp3"
-      },
-      {
-        image: "images/suspect4.png",
-        audio: "music/guitar.mp3"
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+
+import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  onValue
+} from
+"https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+import { firebaseConfig } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const suspects = [
+  {
+    name: "嫌疑犯 1",
+    image: "images/JT.png",
+    audio: "music/hacker.mp3"
+  },
+  {
+    name: "嫌疑犯 2",
+    image: "images/suspect2.png",
+    audio: "music/viola.mp3"
+  },
+  {
+    name: "嫌疑犯 3",
+    image: "images/suspect3.png",
+    audio: "music/vocal.mp3"
+  },
+  {
+    name: "嫌疑犯 4",
+    image: "images/suspect4.png",
+    audio: "music/guitar.mp3"
+  }
+];
+
+const $ = id => document.getElementById(id);
+
+let sessionId = null;
+let sessionConfig = null;
+let selectedSuspect = -1;
+let alreadyVoted = false;
+let submitting = false;
+let ready = false;
+let serverOffset = 0;
+
+let unsubscribeConfig = null;
+let unsubscribeVote = null;
+
+const audioPlayer = new Audio();
+let playingIndex = -1;
+
+function showMessage(text) {
+  $("message").textContent = text;
+}
+
+function serverNow() {
+  return Date.now() + serverOffset;
+}
+
+function votingOpen() {
+  return ready &&
+    !alreadyVoted &&
+    !submitting &&
+    sessionConfig &&
+    sessionConfig.status === "open" &&
+    serverNow() >= sessionConfig.startedAt &&
+    serverNow() < sessionConfig.endsAt;
+}
+
+function stopMusic() {
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
+  playingIndex = -1;
+  updateButtons();
+}
+
+function renderSuspects() {
+  const container = $("suspects");
+  container.innerHTML = "";
+
+  suspects.forEach((suspect, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.id = "card-" + index;
+
+    const img = document.createElement("img");
+    img.src = suspect.image;
+    img.alt = suspect.name;
+
+    const title = document.createElement("h3");
+    title.textContent = suspect.name;
+
+    const play = document.createElement("button");
+    play.className = "playBtn";
+    play.id = "play-" + index;
+    play.textContent = "▶ 播放音樂";
+    play.onclick = () => playMusic(index);
+
+    const choose = document.createElement("button");
+    choose.className = "chooseBtn";
+    choose.id = "choose-" + index;
+    choose.textContent = "選擇這位嫌疑犯";
+    choose.onclick = () => selectSuspect(index);
+
+    card.append(img, title, play, choose);
+    container.appendChild(card);
+  });
+
+  updateButtons();
+}
+
+function playMusic(index) {
+  if (playingIndex === index && !audioPlayer.paused) {
+    audioPlayer.pause();
+    playingIndex = -1;
+    updateButtons();
+    return;
+  }
+
+  audioPlayer.pause();
+  audioPlayer.src = suspects[index].audio;
+  playingIndex = index;
+
+  audioPlayer.play().catch(() => {
+    playingIndex = -1;
+    showMessage("音樂播放失敗，請確認音檔是否存在。");
+    updateButtons();
+  });
+
+  updateButtons();
+}
+
+audioPlayer.onended = () => {
+  playingIndex = -1;
+  updateButtons();
+};
+
+function selectSuspect(index) {
+  if (!votingOpen()) return;
+
+  selectedSuspect = index;
+  updateButtons();
+}
+
+function updateButtons() {
+  const canVote = votingOpen();
+
+  suspects.forEach((_, index) => {
+    const card = $("card-" + index);
+    const play = $("play-" + index);
+    const choose = $("choose-" + index);
+
+    if (!card) return;
+
+    card.classList.toggle(
+      "selected",
+      selectedSuspect === index
+    );
+
+    play.textContent =
+      playingIndex === index && !audioPlayer.paused
+        ? "⏸ 暫停音樂"
+        : "▶ 播放音樂";
+
+    choose.disabled = !canVote;
+
+    choose.classList.toggle(
+      "selected",
+      selectedSuspect === index
+    );
+
+    choose.textContent =
+      selectedSuspect === index
+        ? "✓ 已選擇"
+        : "選擇這位嫌疑犯";
+  });
+
+  $("submitBtn").disabled =
+    !canVote || selectedSuspect === -1;
+
+  if (alreadyVoted) {
+    $("submitBtn").textContent = "✓ 已完成投票";
+  } else if (submitting) {
+    $("submitBtn").textContent = "正在送出……";
+  } else {
+    $("submitBtn").textContent = "確認投票";
+  }
+}
+
+function updateTimer() {
+  if (!sessionConfig) {
+    $("timer").textContent = "05:00";
+    updateButtons();
+    return;
+  }
+
+  const seconds = Math.max(
+    0,
+    Math.ceil(
+      (sessionConfig.endsAt - serverNow()) / 1000
+    )
+  );
+
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+
+  $("timer").textContent =
+    String(minutes).padStart(2, "0") +
+    ":" +
+    String(remaining).padStart(2, "0");
+
+  if (alreadyVoted) {
+    $("status").textContent = "投票成功，感謝參與！";
+  } else if (seconds === 0 ||
+             sessionConfig.status === "closed") {
+    $("status").textContent = "投票時間已結束";
+  } else if (!ready) {
+    $("status").textContent = "正在確認投票資格……";
+  } else {
+    $("status").textContent = "投票進行中";
+  }
+
+  updateButtons();
+}
+
+function clearSessionListeners() {
+  if (unsubscribeConfig) {
+    unsubscribeConfig();
+    unsubscribeConfig = null;
+  }
+
+  if (unsubscribeVote) {
+    unsubscribeVote();
+    unsubscribeVote = null;
+  }
+}
+
+async function loadSession(id, user) {
+  clearSessionListeners();
+
+  sessionId = id;
+  sessionConfig = null;
+  selectedSuspect = -1;
+  alreadyVoted = false;
+  ready = false;
+
+  showMessage("");
+  updateTimer();
+
+  if (!id) {
+    $("status").textContent = "目前沒有開放中的投票";
+    return;
+  }
+
+  const configRef = ref(
+    db, "sessions/" + id + "/config"
+  );
+
+  const myVoteRef = ref(
+    db, "sessions/" + id + "/votes/" + user.uid
+  );
+
+  unsubscribeConfig = onValue(
+    configRef,
+    snapshot => {
+      sessionConfig = snapshot.val();
+      updateTimer();
+    },
+    error => {
+      showMessage("讀取場次失敗：" + error.message);
+    }
+  );
+
+  unsubscribeVote = onValue(
+    myVoteRef,
+    snapshot => {
+      alreadyVoted = snapshot.exists();
+      ready = true;
+
+      if (alreadyVoted) {
+        selectedSuspect = snapshot.val();
+        showMessage("你的選票已經成功記錄。");
       }
-    ];
 
-    let selectedSuspect = -1;
-    let currentAudio = null;
-    let currentAudioIndex = -1;
+      updateTimer();
+    },
+    error => {
+      ready = false;
+      showMessage("確認投票資格失敗：" + error.message);
+      updateButtons();
+    }
+  );
+}
 
-    const suspectList =
-      document.getElementById("suspectList");
+$("submitBtn").onclick = async () => {
+  if (!votingOpen() || selectedSuspect < 0) return;
 
-    function renderSuspects() {
-      suspectList.innerHTML = "";
+  const user = auth.currentUser;
+  if (!user || !sessionId) return;
 
-      suspects.forEach((suspect, index) => {
-        const card = document.createElement("div");
-        card.className = "suspect";
+  const voteSessionId = sessionId;
+  const voteIndex = selectedSuspect;
 
-        if (selectedSuspect === index) {
-          card.classList.add("selected");
+  submitting = true;
+  updateButtons();
+
+  try {
+    const voteRef = ref(
+      db,
+      "sessions/" + voteSessionId + "/votes/" + user.uid
+    );
+
+    await set(voteRef, voteIndex);
+
+    alreadyVoted = true;
+    stopMusic();
+    showMessage("投票成功！你的選票已經送出。");
+  } catch (error) {
+    showMessage(
+      "投票未成功，可能已投過票或時間已截止：" +
+      error.message
+    );
+  } finally {
+    submitting = false;
+    updateTimer();
+  }
+};
+
+renderSuspects();
+
+onValue(
+  ref(db, ".info/serverTimeOffset"),
+  snapshot => {
+    serverOffset = snapshot.val() || 0;
+    updateTimer();
+  }
+);
+
+setInterval(updateTimer, 500);
+
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    try {
+      await signInAnonymously(auth);
+    } catch (error) {
+      $("status").textContent = "登入失敗";
+      showMessage(
+        "匿名登入失敗：" + error.message
+      );
+    }
+    return;
+  }
+
+  try {
+    onValue(
+      ref(db, "currentSession"),
+      snapshot => {
+        const id = snapshot.val();
+
+        if (id !== sessionId) {
+          loadSession(id, user);
         }
-
-        const image = document.createElement("img");
-        image.src = suspect.image;
-        image.alt = "嫌疑犯 " + (index + 1);
-        image.onclick = () => selectSuspect(index);
-
-        const title = document.createElement("h2");
-        title.textContent = "嫌疑犯 " + (index + 1);
-
-        const playButton = document.createElement("button");
-        playButton.className = "play-btn";
-        playButton.dataset.index = index;
-
-        playButton.onclick = () => playMusic(index);
-
-        const selectButton = document.createElement("button");
-        selectButton.className = "select-btn";
-
-        selectButton.textContent =
-          selectedSuspect === index
-            ? "✓ 已選擇"
-            : "選擇這位嫌疑犯";
-
-        selectButton.onclick = () => selectSuspect(index);
-
-        card.appendChild(image);
-        card.appendChild(title);
-        card.appendChild(playButton);
-        card.appendChild(selectButton);
-
-        suspectList.appendChild(card);
-      });
-
-      updatePlayButtons();
-    }
-
-    function selectSuspect(index) {
-      selectedSuspect = index;
-
-      document.getElementById("selection").textContent =
-        "目前選擇：嫌疑犯 " + (index + 1);
-
-      renderSuspects();
-    }
-
-    function updatePlayButtons() {
-      document.querySelectorAll(".play-btn")
-        .forEach(button => {
-          const index = Number(button.dataset.index);
-
-          const isPlaying =
-            currentAudio &&
-            currentAudioIndex === index &&
-            !currentAudio.paused;
-
-          button.textContent =
-            isPlaying ? "⏸ 暫停音樂" : "▶ 播放音樂";
-        });
-    }
-
-    async function playMusic(index) {
-      // 點擊目前正在播放的嫌疑犯
-      if (currentAudio && currentAudioIndex === index) {
-        if (currentAudio.paused) {
-          try {
-            await currentAudio.play();
-          } catch (error) {
-            alert("音樂無法播放，請檢查檔案。");
-          }
-        } else {
-          currentAudio.pause();
-        }
-
-        updatePlayButtons();
-        return;
+      },
+      error => {
+        showMessage(
+          "無法取得目前投票場次：" + error.message
+        );
       }
+    );
+  } catch (error) {
+    showMessage("連線失敗：" + error.message);
+  }
+});
 
-      // 切換音樂時停止上一首
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      const audio = new Audio(suspects[index].audio);
-
-      currentAudio = audio;
-      currentAudioIndex = index;
-
-      audio.onended = () => {
-        if (currentAudio === audio) {
-          currentAudio = null;
-          currentAudioIndex = -1;
-          updatePlayButtons();
-        }
-      };
-
-      try {
-        await audio.play();
-      } catch (error) {
-        alert("音樂無法播放，請確認 music 資料夾及檔名。");
-        currentAudio = null;
-        currentAudioIndex = -1;
-      }
-
-      updatePlayButtons();
-    }
-
-    renderSuspects();
-  </script>
-
+</script>
 </body>
 </html>
-
