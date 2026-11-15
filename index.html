@@ -1785,12 +1785,11 @@ ctx.restore();
       );
     };
 
-    const walking = player.state === "walking";
-    const phase = walking ? animationTime * 0.12 : 0;
-    const step = Math.sin(phase);
-    const bob = walking
-      ? Math.round(Math.abs(Math.sin(phase)) * 1)
-      : 0;
+  const phase = walking ? animationTime * 0.16 : 0;
+const step = Math.sin(phase);
+const bob = walking
+  ? Math.round((1 - Math.cos(phase * 2)) * 0.5)
+  : 0;
 
     // 地面陰影
     r(13, 74, 32, 3, "#30231c");
@@ -1798,18 +1797,52 @@ ctx.restore();
     ctx.save();
     ctx.translate(0, -bob);
 
-    // ===== 雙腿：朝右前方走 =====
+  
+    // ===== 雙腿：有膝蓋彎曲的走路動畫 =====
 
-    const backStep = walking ? Math.round(-step * 4) : -1;
-    const frontStep = walking ? Math.round(step * 4) : 1;
+    const drawLeg = (hipX, swing, isFront) => {
+      const pants = isFront ? "#444b48" : "#303735";
+      const shadow = isFront ? "#353c39" : "#252d2a";
+      const shoe = isFront ? "#292b29" : "#242725";
 
-    const backLift = walking
-      ? Math.round(Math.max(0, -step) * 2)
-      : 0;
+      // 大腿擺動，膝蓋跟著移動
+      const kneeX = hipX + Math.round(swing * 0.55);
+      const kneeY = 64 - Math.round(Math.max(0, swing) * 0.2);
 
-    const frontLift = walking
-      ? Math.round(Math.max(0, step) * 2)
-      : 0;
+      // 腳往前跨時抬起，往後時落地
+      const lift = Math.round(Math.max(0, swing) * 0.65);
+
+      const footX = hipX + swing;
+      const footY = 73 - lift;
+
+      // 用粗線連接關節，避免腿部斷開
+      ctx.strokeStyle = pants;
+      ctx.lineWidth = 10;
+      ctx.lineCap = "square";
+      ctx.lineJoin = "bevel";
+      ctx.beginPath();
+      ctx.moveTo(x + hipX, y + 58);
+      ctx.lineTo(x + kneeX, y + kneeY);
+      ctx.lineTo(x + footX, y + footY - 4);
+      ctx.stroke();
+
+      // 膝蓋陰影
+      r(kneeX - 3, kneeY - 2, 7, 4, shadow);
+
+      // 鞋子
+      r(footX - 5, footY - 2, 15, 5, shoe);
+      r(footX - 5, footY + 2, 16, 2,
+        isFront ? "#938c7f" : "#817b70");
+    };
+
+    // 一前一後，交替踏步
+    const stride = walking ? Math.round(step * 7) : 0;
+
+    // 後腿先畫，讓前腿自然遮住後腿
+    drawLeg(25, -stride, false);
+    drawLeg(35, stride, true);
+
+
 
     // 後腿
     r(20, 54, 11, 10, "#303735");
@@ -1825,7 +1858,7 @@ ctx.restore();
 
     // ===== 後手臂 =====
 
-    const armSwing = walking ? Math.round(step * 3) : 0;
+    const armSwing = walking ? Math.round(step * 5) : 0;
 
     r(15 + armSwing, 38, 7, 13, "#a8785c");
     r(16 + armSwing, 49, 7, 8, "#c18c6b");
