@@ -484,6 +484,10 @@ function startOpening() {
   let selectedSuspect = -1;
   let currentAudio = null;
 
+const puzzleMusic = new Audio("music/puzzle.mp3");
+puzzleMusic.loop = true;
+puzzleMusic.volume = 0.3;
+  
   // 真正的駭客是羅思穎，編號 0
   const correctSuspect = 0;
 
@@ -915,6 +919,11 @@ let transitionStart = 0;
   function startGame() {
   hideAllScreens();
 
+puzzleMusic.currentTime = 0;
+puzzleMusic.play().catch(err => {
+  console.log("解謎音樂播放失敗：", err);
+});
+    
   gameStarted = false;
   animationTime = 0;
   clueShown = false;
@@ -1095,7 +1104,11 @@ function confirmSuspect() {
   }
 
   const isCorrect = selectedSuspect === correctSuspect;
-
+if (isCorrect) {
+  puzzleMusic.pause();
+  puzzleMusic.currentTime = 0;
+}
+  
  const endingVideo = isCorrect
   ? "videos/success.mp4"
   : "videos/failure.mp4";
