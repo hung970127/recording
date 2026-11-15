@@ -483,7 +483,8 @@ function startOpening() {
   let animationTime = 0;
   let selectedSuspect = -1;
   let currentAudio = null;
-
+let currentSuspectIndex = -1;
+  
 // 音樂淡入淡出（預設 2 秒）
 const fadeTimers = new WeakMap();
 
@@ -1079,9 +1080,18 @@ puzzleMusic.play().catch(err => {
       const instrument = document.createElement("p");
       instrument.textContent = suspect.instrument;
 
-      const playButton = document.createElement("button");
-      playButton.textContent = "▶ 試聽音樂";
-      playButton.onclick = () => playMusic(index);
+     const playButton = document.createElement("button");
+playButton.className = "suspect-play-btn";
+playButton.dataset.index = index;
+
+playButton.textContent =
+  currentAudio &&
+  currentSuspectIndex === index &&
+  !currentAudio.paused
+    ? "⏸ 暫停"
+    : "▶ 播放";
+
+playButton.onclick = () => playMusic(index);
 
       const selectButton = document.createElement("button");
       selectButton.textContent =
@@ -1105,58 +1115,82 @@ puzzleMusic.play().catch(err => {
   // 播放音樂
   // ====================================
 
+function updatePlayButtons() {
+  document.querySelectorAll(".suspect-play-btn").forEach(btn => {
+    const i = Number(btn.dataset.index);
+
+    btn.textContent =
+      currentAudio &&
+      currentSuspectIndex === i &&
+      !currentAudio.paused
+        ? "⏸ 暫停"
+        : "▶ 播放";
+  });
+}
+
 function playMusic(index) {
 
-  // 解謎音樂淡出
-  fadeAudio(
-    puzzleMusic,
-    puzzleMusic.volume,
-    0,
-    2000,
-    () => puzzleMusic.pause()
-  );
+  // 同一位嫌疑犯：暫停或繼續
+  if (currentAudio && currentSuspectIndex === index) {
+    const audio = currentAudio;
 
-  // 上一位嫌疑犯音樂淡出
+    if (!audio.paused) {
+      fadeAudio(audio, audio.volume, 0, 500, () => {
+        audio.pause();
+        updatePlayButtons();
+      });
+    } else {
+      audio.play().then(() => {
+        fadeAudio(audio, audio.volume, 1, 500);
+        updatePlayButtons();
+      }).catch(console.error);
+    }
+    return;
+  }
+
+  // 背景音樂淡出
+  fadeAudio(puzzleMusic, puzzleMusic.volume, 0, 2000, () => {
+    puzzleMusic.pause();
+  });
+
+  // 前一位嫌疑犯淡出
   if (currentAudio) {
     const oldAudio = currentAudio;
-
     oldAudio.onended = null;
 
-    fadeAudio(
-      oldAudio,
-      oldAudio.volume,
-      0,
-      2000,
-      () => {
-        oldAudio.pause();
-        oldAudio.currentTime = 0;
-      }
-    );
+    fadeAudio(oldAudio, oldAudio.volume, 0, 1000, () => {
+      oldAudio.pause();
+      oldAudio.currentTime = 0;
+    });
   }
 
   // 新嫌疑犯音樂淡入
   const newAudio = new Audio(suspects[index].audio);
-  currentAudio = newAudio;
 
+  currentAudio = newAudio;
+  currentSuspectIndex = index;
   newAudio.volume = 0;
 
   newAudio.play().then(() => {
     fadeAudio(newAudio, 0, 1, 2000);
-  }).catch(() => {
-    alert("找不到音樂：" + suspects[index].audio);
-  });
+    updatePlayButtons();
+  }).catch(console.error);
 
-  // 試聽結束後，解謎音樂淡入
+  // 播放結束後，恢復解謎音樂
   newAudio.onended = () => {
     if (currentAudio !== newAudio) return;
 
     currentAudio = null;
+    currentSuspectIndex = -1;
+    updatePlayButtons();
 
     puzzleMusic.volume = 0;
     puzzleMusic.play().then(() => {
       fadeAudio(puzzleMusic, 0, 0.3, 2000);
     }).catch(console.error);
   };
+
+  updatePlayButtons();
 }
 
   // ====================================
