@@ -171,6 +171,11 @@
 
         sessionConfig = { startedAt, endsAt, status: "open" };
 
+await set(
+  ref(db, "currentSession"),
+  sessionId
+);
+        
         $("results").innerHTML = "";
         $("status").textContent = "投票進行中";
         $("closeBtn").disabled = false;
