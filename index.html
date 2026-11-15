@@ -548,7 +548,8 @@ import { initializeApp } from
 import {
   getAuth,
   onAuthStateChanged,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  signOut
 } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
 
 import {
@@ -584,7 +585,7 @@ async function loginAdmin() {
     );
 
     if (credential.user.uid !== ADMIN_UID) {
-      await firebaseAuth.signOut();
+    await signOut(firebaseAuth);
       message.textContent = "這個帳號不是主持人帳號";
       return;
     }
