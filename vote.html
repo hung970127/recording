@@ -1,1 +1,298 @@
 
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>駭客在哪裡｜手機投票</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #080c18;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+      padding: 24px 14px 40px;
+    }
+
+    h1 {
+      color: #92d8ff;
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #c3cfdf;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 25px;
+    }
+
+    .suspects {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 520px;
+      margin: auto;
+    }
+
+    .suspect {
+      background: #202c43;
+      border: 2px solid #647b9c;
+      border-radius: 10px;
+      padding: 12px 8px;
+    }
+
+    .suspect.selected {
+      border-color: #ffe18c;
+      background: #3b4963;
+    }
+
+    .suspect img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      image-rendering: pixelated;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .suspect h2 {
+      font-size: 16px;
+      color: #e9d6a7;
+      margin: 12px 0;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      background: #263954;
+      border: 2px solid #91c8ee;
+      color: white;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .play-btn {
+      width: 100%;
+    }
+
+    .select-btn {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .selected .select-btn {
+      background: #806d3b;
+      border-color: #ffe18c;
+    }
+
+    #selection {
+      margin: 24px auto 12px;
+      color: #ffe18c;
+      font-size: 17px;
+      min-height: 24px;
+    }
+
+    #submitVote {
+      width: min(100%, 350px);
+      padding: 15px;
+      font-size: 18px;
+      background: #355a77;
+    }
+
+    #submitVote:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #message {
+      color: #c3cfdf;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>駭客在哪裡？</h1>
+
+  <p class="subtitle">
+    請聆聽四位嫌疑犯的音樂<br>
+    根據大螢幕上的線索找出真正的駭客
+  </p>
+
+  <div class="suspects" id="suspectList"></div>
+
+  <p id="selection">尚未選擇嫌疑犯</p>
+
+  <button id="submitVote" disabled>
+    送出投票（尚未開放）
+  </button>
+
+  <p id="message">
+    投票系統正在建置中。<br>
+    目前可以試聽音樂及選擇嫌疑犯。
+  </p>
+
+  <script>
+    // 與 index.html 使用相同的照片和音樂
+
+    const suspects = [
+      {
+        image: "images/JT.png",
+        audio: "music/hacker.mp3"
+      },
+      {
+        image: "images/suspect2.png",
+        audio: "music/viola.mp3"
+      },
+      {
+        image: "images/suspect3.png",
+        audio: "music/vocal.mp3"
+      },
+      {
+        image: "images/suspect4.png",
+        audio: "music/guitar.mp3"
+      }
+    ];
+
+    let selectedSuspect = -1;
+    let currentAudio = null;
+    let currentAudioIndex = -1;
+
+    const suspectList =
+      document.getElementById("suspectList");
+
+    function renderSuspects() {
+      suspectList.innerHTML = "";
+
+      suspects.forEach((suspect, index) => {
+        const card = document.createElement("div");
+        card.className = "suspect";
+
+        if (selectedSuspect === index) {
+          card.classList.add("selected");
+        }
+
+        const image = document.createElement("img");
+        image.src = suspect.image;
+        image.alt = "嫌疑犯 " + (index + 1);
+        image.onclick = () => selectSuspect(index);
+
+        const title = document.createElement("h2");
+        title.textContent = "嫌疑犯 " + (index + 1);
+
+        const playButton = document.createElement("button");
+        playButton.className = "play-btn";
+        playButton.dataset.index = index;
+
+        playButton.onclick = () => playMusic(index);
+
+        const selectButton = document.createElement("button");
+        selectButton.className = "select-btn";
+
+        selectButton.textContent =
+          selectedSuspect === index
+            ? "✓ 已選擇"
+            : "選擇這位嫌疑犯";
+
+        selectButton.onclick = () => selectSuspect(index);
+
+        card.appendChild(image);
+        card.appendChild(title);
+        card.appendChild(playButton);
+        card.appendChild(selectButton);
+
+        suspectList.appendChild(card);
+      });
+
+      updatePlayButtons();
+    }
+
+    function selectSuspect(index) {
+      selectedSuspect = index;
+
+      document.getElementById("selection").textContent =
+        "目前選擇：嫌疑犯 " + (index + 1);
+
+      renderSuspects();
+    }
+
+    function updatePlayButtons() {
+      document.querySelectorAll(".play-btn")
+        .forEach(button => {
+          const index = Number(button.dataset.index);
+
+          const isPlaying =
+            currentAudio &&
+            currentAudioIndex === index &&
+            !currentAudio.paused;
+
+          button.textContent =
+            isPlaying ? "⏸ 暫停音樂" : "▶ 播放音樂";
+        });
+    }
+
+    async function playMusic(index) {
+      // 點擊目前正在播放的嫌疑犯
+      if (currentAudio && currentAudioIndex === index) {
+        if (currentAudio.paused) {
+          try {
+            await currentAudio.play();
+          } catch (error) {
+            alert("音樂無法播放，請檢查檔案。");
+          }
+        } else {
+          currentAudio.pause();
+        }
+
+        updatePlayButtons();
+        return;
+      }
+
+      // 切換音樂時停止上一首
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      const audio = new Audio(suspects[index].audio);
+
+      currentAudio = audio;
+      currentAudioIndex = index;
+
+      audio.onended = () => {
+        if (currentAudio === audio) {
+          currentAudio = null;
+          currentAudioIndex = -1;
+          updatePlayButtons();
+        }
+      };
+
+      try {
+        await audio.play();
+      } catch (error) {
+        alert("音樂無法播放，請確認 music 資料夾及檔名。");
+        currentAudio = null;
+        currentAudioIndex = -1;
+      }
+
+      updatePlayButtons();
+    }
+
+    renderSuspects();
+  </script>
+
+</body>
+</html>
+
