@@ -1468,59 +1468,6 @@ function drawRoom() {
   ctx.lineTo(553, 411);
   ctx.stroke();
 
-  // ===== 左右木製扶手 =====
-  function drawWoodRail(topX, bottomX) {
-
-    // 四根支柱，從階梯向上延伸
-    for (let i = 0; i < 4; i++) {
-      const t = i / 3;
-      const x = topX + (bottomX - topX) * t;
-      const baseY = 240 + 136 * t;
-      const railY = 189 + 136 * t;
-
-      // 支柱陰影
-      r(x - 6, railY, 12, baseY - railY + 8, "#50351f");
-
-      // 木頭正面
-      r(x - 3, railY + 2, 6, baseY - railY + 3, "#b98b5c");
-
-      // 柱頂裝飾
-      r(x - 8, railY - 4, 16, 7, "#d7a675");
-      r(x - 6, railY - 4, 12, 2, "#f0c692");
-    }
-
-    // 斜向扶手：深色外框
-    ctx.strokeStyle = "#49301e";
-    ctx.lineWidth = 16;
-    ctx.beginPath();
-    ctx.moveTo(topX, 189);
-    ctx.lineTo(bottomX, 325);
-    ctx.stroke();
-
-    // 扶手木頭
-    ctx.strokeStyle = "#b98b5c";
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.moveTo(topX, 189);
-    ctx.lineTo(bottomX, 325);
-    ctx.stroke();
-
-    // 扶手高光
-    ctx.strokeStyle = "#e9bd85";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(topX, 186);
-    ctx.lineTo(bottomX, 322);
-    ctx.stroke();
-  }
-
-  // 左右扶手
-  drawWoodRail(385, 373);
-  drawWoodRail(541, 553);
-
-  ctx.lineCap = "butt";
-
-
   // ===== 最下方與地板交接 =====
   r(353, 409, 220, 8, "#49301f");
   r(358, 409, 210, 3, "#bc8c5c");
