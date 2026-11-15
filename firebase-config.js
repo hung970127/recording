@@ -2,6 +2,7 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyD3HJ9p5__h6VKqzpAx_Rv6Dcf52ymompI",
   authDomain: "hacker-voting.firebaseapp.com",
+  databaseURL: "https://hacker-voting-default-rtdb.firebaseio.com",
   projectId: "hacker-voting",
   storageBucket: "hacker-voting.firebasestorage.app",
   messagingSenderId: "682273632076",
