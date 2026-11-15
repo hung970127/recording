@@ -1071,22 +1071,30 @@ puzzleMusic.play().catch(err => {
   // 播放音樂
   // ====================================
 
-  function playMusic(index) {
+function playMusic(index) {
 
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
+  // 暫停解謎背景音樂
+  puzzleMusic.pause();
 
-    currentAudio = new Audio(suspects[index].audio);
-
-    currentAudio.play().catch(() => {
-      alert(
-        "尚未找到音樂檔案，請先加入：" +
-        suspects[index].audio
-      );
-    });
+  // 停止上一位嫌疑犯的音樂
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
   }
+
+  // 播放目前嫌疑犯的音樂
+  currentAudio = new Audio(suspects[index].audio);
+
+  currentAudio.play().catch(() => {
+    alert("尚未找到音樂檔案：" + suspects[index].audio);
+    puzzleMusic.play().catch(console.error);
+  });
+
+  // 試聽結束後恢復背景音樂
+  currentAudio.onended = () => {
+    puzzleMusic.play().catch(console.error);
+  };
+}
 
   // ====================================
   // 確認駭客身分
