@@ -144,6 +144,73 @@ button:disabled {
 
 <p id="message"></p>
 
+<div id="jokeScreen" style="
+  display:none;
+  max-width:500px;
+  margin:30px auto;
+  padding:30px 22px;
+  background:#141e30;
+  border:2px solid #6de5c6;
+  border-radius:14px;
+  box-shadow:0 0 25px rgba(109,229,198,0.15);
+">
+
+  <div style="
+    color:#6de5c6;
+    font-size:14px;
+    letter-spacing:2px;
+  ">
+    ✓ VOTE SUBMITTED
+  </div>
+
+  <h2 style="color:#ffffff;">
+    投票成功！
+  </h2>
+
+  <p style="color:#b8c9dc;">
+    你的選票已經成功送出
+  </p>
+
+  <hr style="
+    border:0;
+    border-top:1px solid #344965;
+    margin:25px 0;
+  ">
+
+  <p style="color:#ffe18c;">
+    等待結果的冷笑話
+  </p>
+
+  <h2 id="jokeQuestion" style="
+    line-height:1.7;
+    color:#ffffff;
+  "></h2>
+
+  <p id="jokeAnswer" style="
+    color:#92d8ff;
+    font-size:19px;
+    line-height:1.8;
+  "></p>
+
+  <button id="nextJokeBtn" style="
+    margin-top:15px;
+    padding:14px 28px;
+    background:#253a58;
+    border:2px solid #92d8ff;
+  ">
+    再來一個冷笑話 →
+  </button>
+
+  <p style="
+    color:#8297b4;
+    font-size:13px;
+    margin-top:25px;
+  ">
+    請等待前方螢幕公布調查結果
+  </p>
+
+</div>
+
 <div id="votingEndedScreen" style="
   display:none;
   max-width:500px;
@@ -214,6 +281,68 @@ const suspects = [
 ];
 
 const $ = id => document.getElementById(id);
+
+const jokes = [
+  {
+    question: "為什麼鋼琴家不怕迷路？",
+    answer: "因為他很會找 Key。"
+  },
+  {
+    question: "為什麼鼓手很容易遲到？",
+    answer: "因為他一直在拖拍。"
+  },
+  {
+    question: "為什麼吉他手不喜歡吵架？",
+    answer: "因為他只想和弦。"
+  },
+  {
+    question: "為什麼貝斯手很少被發現？",
+    answer: "因為大家都沒注意到他在不在。"
+  },
+  {
+    question: "為什麼錄音師不敢說謊？",
+    answer: "因為所有事情都有 Record。"
+  },
+  {
+    question: "為什麼駭客不喜歡吃餅乾？",
+    answer: "因為他怕被 Cookie 追蹤。"
+  },
+  {
+    question: "為什麼作曲家不喜歡分手？",
+    answer: "因為他怕沒有下一個小節。"
+  },
+  {
+    question: "為什麼音樂系學生不怕考試？",
+    answer: "因為他們早就習慣被當（降）了。"
+  },
+  {
+    question: "為什麼麥克風很會保守秘密？",
+    answer: "因為它都只會收音，不會回嘴。"
+  },
+  {
+    question: "為什麼電腦被駭客入侵後不敢睡覺？",
+    answer: "因為它怕被偷偷開機。"
+  }
+];
+
+let lastJokeIndex = -1;
+
+function showRandomJoke() {
+  if (jokes.length === 0) return;
+
+  let index;
+
+  do {
+    index = Math.floor(Math.random() * jokes.length);
+  } while (index === lastJokeIndex && jokes.length > 1);
+
+  lastJokeIndex = index;
+
+  $("jokeQuestion").textContent = jokes[index].question;
+  $("jokeAnswer").textContent = jokes[index].answer;
+}
+
+$("nextJokeBtn").onclick = showRandomJoke;
 
 let sessionId = null;
 let sessionConfig = null;
@@ -374,12 +503,30 @@ function updateTimer() {
     serverNow() >= sessionConfig.endsAt
   );
 
+ 
+  const showJokes = !ended && alreadyVoted;
+
   $("votingEndedScreen").style.display = ended ? "block" : "none";
-  $("suspects").style.display = ended ? "none" : "grid";
-  $("submitBtn").style.display = ended ? "none" : "block";
+  $("jokeScreen").style.display = showJokes ? "block" : "none";
+
+  $("suspects").style.display =
+    ended || showJokes ? "none" : "grid";
+
+  $("submitBtn").style.display =
+    ended || showJokes ? "none" : "block";
+
   $("timer").style.display = ended ? "none" : "block";
-  $("status").style.display = ended ? "none" : "block";
-  $("message").style.display = ended ? "none" : "block";
+
+  $("status").style.display =
+    ended || showJokes ? "none" : "block";
+
+  $("message").style.display =
+    ended || showJokes ? "none" : "block";
+
+  if (showJokes && lastJokeIndex === -1) {
+    showRandomJoke();
+  }
+
 
   if (ended && !audioPlayer.paused) {
     audioPlayer.pause();
@@ -511,9 +658,12 @@ $("submitBtn").onclick = async () => {
 
     await set(voteRef, voteIndex);
 
+ 
     alreadyVoted = true;
     stopMusic();
     showMessage("投票成功！你的選票已經送出。");
+    updateTimer();
+
   } catch (error) {
     showMessage(
       "投票未成功，可能已投過票或時間已截止：" +
