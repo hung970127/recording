@@ -1851,8 +1851,10 @@ function drawPlayer() {
   r(14, 76, 33, 2, "#302b2d");
   r(20, 78, 22, 1, "#4a4040");
 
-  ctx.save();
-  ctx.translate(0, -bob);
+ctx.save();
+ctx.translate(x + 32, y + 76 - bob);
+ctx.scale(0.91, 0.88);
+ctx.translate(-(x + 32), -(y + 76));
 
   // =====================================
   // 1. 後腿
@@ -2000,7 +2002,14 @@ function drawPlayer() {
   // 衣領
   r(26, 34, 11, 3, C.shirtDark);
   r(29, 34, 7, 2, C.shirtShadow);
+ctx.restore();
 
+ctx.save();
+ctx.translate(x + 32, y + 32 - bob);
+ctx.rotate(0.07);
+ctx.scale(1.12, 1.12);
+ctx.translate(-(x + 32), -(y + 32));
+  
   // =====================================
   // 8. 後方頭髮
   // =====================================
