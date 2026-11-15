@@ -1,12 +1,12 @@
+
 export const firebaseConfig = {
-  apiKey: "填入你的API_KEY",
-  authDomain: "填入你的AUTH_DOMAIN",
-  databaseURL: "填入你的DATABASE_URL",
-  projectId: "填入你的PROJECT_ID",
-  storageBucket: "填入你的STORAGE_BUCKET",
-  messagingSenderId: "填入你的MESSAGING_SENDER_ID",
-  appId: "填入你的APP_ID"
+  apiKey: "AIzaSyD3HJ9p5__h6VKqzpAx_Rv6Dcf52ymompI",
+  authDomain: "hacker-voting.firebaseapp.com",
+  projectId: "hacker-voting",
+  storageBucket: "hacker-voting.firebasestorage.app",
+  messagingSenderId: "682273632076",
+  appId: "1:682273632076:web:81e1d5a28c0fadc158a9e9",
+  measurementId: "G-BRWW12VV9V"
 };
 
-export const ADMIN_UID = "填入主持人UID";
-
+export const ADMIN_UID = "稍後填入主持人UID";
