@@ -1208,42 +1208,44 @@ function playMusic(index) {
 
  
 function confirmSuspect() {
+
+  // 沒有選擇嫌疑犯
   if (selectedSuspect === -1) {
     alert("請先選擇一位嫌疑人！");
     return;
   }
 
+  // 選錯：提示玩家繼續調查
+  if (selectedSuspect !== correctSuspect) {
+    alert("指認錯誤！請再仔細聆聽音樂，繼續尋找真正的駭客！");
+    selectedSuspect = -1;
+    showSuspects();
+    return;
+  }
+
+ // 選對：立即停止嫌疑犯音樂
 if (currentAudio) {
   currentAudio.pause();
   currentAudio.currentTime = 0;
+  currentAudio = null;
+  currentSuspectIndex = -1;
 }
 
-// 指認後恢復解謎音樂
-puzzleMusic.play().catch(console.error);
-
-  const isCorrect = selectedSuspect === correctSuspect;
-if (isCorrect) {
+  // 停止解謎背景音樂
   puzzleMusic.pause();
   puzzleMusic.currentTime = 0;
-}
-  
- const endingVideo = isCorrect
-  ? "videos/success.mp4"
-  : "videos/failure.mp4";
 
-  playStoryVideo(endingVideo, () => {
+  // 播放成功影片
+  playStoryVideo("videos/success.mp4", () => {
     hideAllScreens();
 
     document.getElementById("resultScreen")
       .classList.add("active");
 
     document.getElementById("resultText").textContent =
-      isCorrect
-        ? "成功找出真正的駭客！"
-        : "指認錯誤，駭客仍然逍遙法外……";
+      "成功找出真正的駭客！";
   });
 }
-
 
   // ====================================
   // 遊戲主迴圈
