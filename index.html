@@ -461,6 +461,23 @@
 
     </div>
 
+<div style="margin-top:20px; text-align:center;">
+  <h2 style="color:#92d8ff;">掃描 QR Code 開始調查</h2>
+
+  <img
+    id="voteQRCode"
+    alt="投票 QR Code"
+    style="
+      width:150px;
+      height:150px;
+      background:white;
+      padding:8px;
+    "
+  >
+
+  <p>請使用手機聆聽四位嫌疑犯的音樂並投票</p>
+</div>
+    
     <button onclick="showSuspects()">
       繼續調查
     </button>
@@ -489,6 +506,11 @@
 </div>
 
 <script>
+  const voteURL = new URL("vote.html", window.location.href).href;
+
+document.getElementById("voteQRCode").src =
+  "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+  encodeURIComponent(voteURL);
   // ====================================
   // 基本設定
   // ====================================
