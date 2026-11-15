@@ -341,8 +341,30 @@
   <div id="dialogue"></div>
 <div id="flash"></div>
   
+  <!-- 主持人登入畫面 -->
+<div id="adminLogin" class="screen active">
+  <h1>主持人登入</h1>
+  <p>請先登入，才能啟動投票系統</p>
+
+  <input
+    id="adminEmail"
+    type="email"
+    placeholder="Firebase 主持人 Email"
+  >
+
+  <input
+    id="adminPassword"
+    type="password"
+    placeholder="密碼"
+  >
+
+  <button onclick="loginAdmin()">登入並準備遊戲</button>
+
+  <p id="adminLoginMessage"></p>
+</div>
+  
   <!-- 開始畫面 -->
-  <div id="start" class="screen active">
+ <div id="start" class="screen">
     <h1>錄音期中</h1>
     <h2>駭客在哪裡</h2>
     <p>去調查啦幹</p>
@@ -502,7 +524,67 @@
 
 </div>
 
-<script>
+<script type="module">
+  
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  onValue
+} from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+import {
+  firebaseConfig,
+  ADMIN_UID
+} from "./firebase-config.js";
+
+const firebaseApp = initializeApp(firebaseConfig);
+const firebaseAuth = getAuth(firebaseApp);
+const firebaseDB = getDatabase(firebaseApp);
+
+
+async function loginAdmin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  const message = document.getElementById("adminLoginMessage");
+
+  message.textContent = "登入中……";
+
+  try {
+    const credential = await signInWithEmailAndPassword(
+      firebaseAuth,
+      email,
+      password
+    );
+
+    if (credential.user.uid !== ADMIN_UID) {
+      await firebaseAuth.signOut();
+      message.textContent = "這個帳號不是主持人帳號";
+      return;
+    }
+
+    document.getElementById("adminLogin").classList.remove("active");
+    document.getElementById("start").classList.add("active");
+
+  } catch (error) {
+    console.error(error);
+    message.textContent = "登入失敗，請檢查帳號與密碼";
+  }
+}
+
+window.loginAdmin = loginAdmin;
+
+  
   const voteURL = new URL("vote.html", window.location.href).href;
 
 document.getElementById("voteQRCode").src =
@@ -609,7 +691,8 @@ puzzleMusic.volume = 0.3;
   
  // ===== 五分鐘倒數計時 =====
 
-let timeLeft = 300;
+let votingEndsAt = 0;
+  let timeLeft = 300;
 let timerInterval = null;
 let gameOver = false;
 
@@ -624,7 +707,7 @@ function startTimer() {
   timer.classList.remove("warning");
   timer.textContent = "05:00";
 
-  const endTime = Date.now() + 300000;
+  const endTime = votingEndsAt;
 
   timerInterval = setInterval(() => {
     timeLeft = Math.max(
@@ -645,6 +728,27 @@ function startTimer() {
 
     if (timeLeft <= 0) {
       stopTimer();
+     
+get(ref(firebaseDB, "currentSession"))
+  .then(snapshot => {
+    if (!snapshot.exists()) {
+      throw new Error("找不到投票場次");
+    }
+
+    const sessionId = snapshot.val();
+
+    return set(
+      ref(firebaseDB, "sessions/" + sessionId + "/config/status"),
+      "closed"
+    );
+  })
+  .then(() => showVotingResults())
+  .catch(error => {
+    console.error("關閉投票或統計失敗：", error);
+    document.getElementById("resultText").textContent =
+      "投票已結束，但暫時無法取得統計結果。";
+  });
+
       gameOver = true;
       gameStarted = false;
 
@@ -659,11 +763,11 @@ function startTimer() {
 
       document.getElementById("resultScreen")
         .classList.add("active");
+document.getElementById("resultText").textContent =
+  "投票結束，正在統計結果……";
 
-      document.getElementById("resultText").textContent =
-        "時間到！駭客已經逃走了！";
+timer.style.display = "none";
 
-      timer.style.display = "none";
     }
   }, 250);
 }
@@ -673,6 +777,75 @@ function stopTimer() {
   timerInterval = null;
 }
   
+async function showVotingResults() {
+  try {
+    const sessionSnapshot = await get(
+      ref(firebaseDB, "currentSession")
+    );
+
+    if (!sessionSnapshot.exists()) {
+      throw new Error("找不到投票場次");
+    }
+
+    const sessionId = sessionSnapshot.val();
+
+    const votesSnapshot = await get(
+      ref(firebaseDB, "sessions/" + sessionId + "/votes")
+    );
+
+    const counts = [0, 0, 0, 0];
+
+    if (votesSnapshot.exists()) {
+      Object.values(votesSnapshot.val()).forEach(vote => {
+        if (Number.isInteger(vote) && vote >= 0 && vote <= 3) {
+          counts[vote]++;
+        }
+      });
+    }
+
+    const total = counts.reduce((sum, count) => sum + count, 0);
+
+    const names = [
+      "羅思穎",
+      "嫌疑人二",
+      "嫌疑人三",
+      "嫌疑人四"
+    ];
+
+    const lines = counts.map((count, index) => {
+      const percentage = total === 0
+        ? 0
+        : (count / total * 100).toFixed(1);
+
+      return `${names[index]}：${count} 票（${percentage}%）`;
+    });
+
+    document.getElementById("resultText").textContent =
+      `投票結束！共 ${total} 票\n\n` +
+      lines.join("\n") +
+      "\n\n真正的駭客是：羅思穎！";
+
+    document.getElementById("resultText").style.whiteSpace =
+      "pre-line";
+
+    // 公布結果 10 秒後，播放成功影片
+    setTimeout(() => {
+      playStoryVideo("videos/success.mp4", () => {
+        hideAllScreens();
+
+        document.getElementById("resultScreen")
+          .classList.add("active");
+      });
+    }, 10000);
+
+  } catch (error) {
+    console.error("讀取投票結果失敗：", error);
+
+    document.getElementById("resultText").textContent =
+      "投票已結束，但暫時無法取得統計結果。";
+  }
+}
+
   // 真正的駭客是羅思穎，編號 0
   const correctSuspect = 0;
 
@@ -1185,18 +1358,48 @@ puzzleMusic.play().catch(err => {
   // 同時顯示兩個線索
   // ====================================
 
-function showClues() {
+
+async function showClues() {
   if (gameOver) return;
 
+  if (!firebaseAuth.currentUser ||
+      firebaseAuth.currentUser.uid !== ADMIN_UID) {
+    alert("請先登入主持人帳號");
+    return;
+  }
+
   gameStarted = false;
-  hideAllScreens();
 
-  document
-    .getElementById("clueScreen")
-    .classList.add("active");
+  const sessionId = "round_" + Date.now();
+  const startedAt = Date.now();
+  const endsAt = startedAt + 300000;
+  votingEndsAt = endsAt;
 
-  startTimer();
+  try {
+    // 建立新的五分鐘投票場次
+    await set(ref(firebaseDB, "sessions/" + sessionId + "/config"), {
+      startedAt,
+      endsAt,
+      status: "open"
+    });
+
+    // 告訴所有觀眾目前是哪一場投票
+    await set(ref(firebaseDB, "currentSession"), sessionId);
+
+    // 投票建立成功後，才顯示線索與倒數
+    hideAllScreens();
+
+    document.getElementById("clueScreen")
+      .classList.add("active");
+
+    startTimer();
+
+  } catch (error) {
+    console.error("建立投票場次失敗：", error);
+    alert("無法開始投票，請檢查 Firebase 設定與網路連線");
+  }
 }
+
   // ====================================
   // 四位嫌疑人
   // ====================================
@@ -1415,6 +1618,11 @@ ctx.globalAlpha = 1;
 
   // 初始化
   gameLoop();
+
+  window.startOpening = startOpening;
+window.skipCurrentVideo = skipCurrentVideo;
+window.showSuspects = showSuspects;
+window.confirmSuspect = confirmSuspect;
 
 </script>
 
