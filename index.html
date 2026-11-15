@@ -1397,115 +1397,129 @@ function drawRoom() {
   r(546, 235, 12, 37, "#503722");
   r(549, 236, 3, 32, "#a77d51");
 
-  // ===== 五階樓梯後方主結構 =====
+
+  // ===== 五階樓梯 V6：等寬感、明顯扶手 =====
+
+  const stairCenterX = 463;
+
+  // 樓梯後方主體
   ctx.fillStyle = "#49301e";
   ctx.beginPath();
-  ctx.moveTo(411, 235);
-  ctx.lineTo(515, 235);
-  ctx.lineTo(574, 414);
-  ctx.lineTo(352, 414);
+  ctx.moveTo(388, 235);
+  ctx.lineTo(538, 235);
+  ctx.lineTo(550, 411);
+  ctx.lineTo(376, 411);
   ctx.closePath();
   ctx.fill();
 
-  // ===== 五階踏板 =====
-  // 由上往下逐漸加寬，最上階接平台
+  // 五階樓梯，寬度由 150 漸增至 174
   const steps = [
-    { y: 240, w: 112 },
-    { y: 274, w: 134 },
-    { y: 308, w: 156 },
-    { y: 342, w: 178 },
-    { y: 376, w: 200 }
+    { y: 240, w: 150 },
+    { y: 274, w: 156 },
+    { y: 308, w: 162 },
+    { y: 342, w: 168 },
+    { y: 376, w: 174 }
   ];
 
   steps.forEach((step, i) => {
-    const x = stairCX - step.w / 2;
+    const x = stairCenterX - step.w / 2;
     const y = step.y;
     const w = step.w;
 
-    // 立板
-    r(x, y + 9, w, 30,
-      i % 2 === 0 ? "#94704b" : "#a07a51");
+    // 階梯立面
+    r(x, y + 8, w, 31,
+      i % 2 === 0 ? "#97714d" : "#a17a53");
 
-    // 立板底部陰影
-    r(x, y + 34, w, 5, "#4b3323");
+    // 底部陰影
+    r(x, y + 34, w, 5, "#513725");
 
     // 踏板厚度
-    r(x - 5, y + 8, w + 10, 7, "#65442c");
+    r(x - 3, y + 7, w + 6, 7, "#69472d");
 
-    // 踏板頂面
-    r(x - 5, y, w + 10, 9, "#c79a67");
+    // 踏板上表面
+    r(x - 3, y, w + 6, 9, "#c99b68");
 
-    // 頂面高光
-    r(x - 3, y + 1, w + 6, 3, "#ebc18b");
+    // 高光
+    r(x - 2, y + 1, w + 4, 3, "#eac08a");
 
     // 木紋
-    r(x + 14, y + 20, w * 0.28, 2, "#ba8b5b");
-    r(x + w * 0.57, y + 27, w * 0.23, 2, "#725033");
-
-    // 木板接縫
-    r(x + w * 0.49, y + 16, 2, 15, "#765338");
+    r(x + 14, y + 20, 42, 2, "#bd9061");
+    r(x + w - 62, y + 27, 38, 2, "#795639");
   });
 
-  // ===== 樓梯左右側板 =====
-  ctx.strokeStyle = "#51351f";
+  // ===== 左右側板 =====
+  ctx.lineCap = "square";
+
+  ctx.strokeStyle = "#4c301d";
   ctx.lineWidth = 12;
   ctx.beginPath();
-  ctx.moveTo(405, 236);
-  ctx.lineTo(350, 412);
-  ctx.moveTo(521, 236);
-  ctx.lineTo(576, 412);
+  ctx.moveTo(385, 236);
+  ctx.lineTo(373, 411);
+  ctx.moveTo(541, 236);
+  ctx.lineTo(553, 411);
   ctx.stroke();
 
-  ctx.strokeStyle = "#a87a4c";
+  ctx.strokeStyle = "#ae8052";
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(405, 236);
-  ctx.lineTo(350, 412);
-  ctx.moveTo(521, 236);
-  ctx.lineTo(576, 412);
+  ctx.moveTo(385, 236);
+  ctx.lineTo(373, 411);
+  ctx.moveTo(541, 236);
+  ctx.lineTo(553, 411);
   ctx.stroke();
 
-  // ===== 左右扶手 =====
-  function drawStairRail(topX, bottomX) {
+  // ===== 左右木製扶手 =====
+  function drawWoodRail(topX, bottomX) {
 
-    // 直立支柱
-    for (let i = 0; i < 5; i++) {
-      const t = i / 4;
+    // 四根支柱，從階梯向上延伸
+    for (let i = 0; i < 4; i++) {
+      const t = i / 3;
       const x = topX + (bottomX - topX) * t;
-      const y = 218 + 34 * i;
+      const baseY = 240 + 136 * t;
+      const railY = 189 + 136 * t;
 
-      r(x - 5, y, 11, 51, "#65452d");
-      r(x - 3, y + 2, 3, 46, "#b58a5d");
-      r(x - 6, y - 3, 13, 6, "#d6a675");
+      // 支柱陰影
+      r(x - 6, railY, 12, baseY - railY + 8, "#50351f");
+
+      // 木頭正面
+      r(x - 3, railY + 2, 6, baseY - railY + 3, "#b98b5c");
+
+      // 柱頂裝飾
+      r(x - 8, railY - 4, 16, 7, "#d7a675");
+      r(x - 6, railY - 4, 12, 2, "#f0c692");
     }
 
-    // 斜向扶手深色外框
+    // 斜向扶手：深色外框
     ctx.strokeStyle = "#49301e";
     ctx.lineWidth = 16;
     ctx.beginPath();
-    ctx.moveTo(topX, 216);
-    ctx.lineTo(bottomX, 352);
+    ctx.moveTo(topX, 189);
+    ctx.lineTo(bottomX, 325);
     ctx.stroke();
 
-    // 木質扶手
-    ctx.strokeStyle = "#b88b5a";
+    // 扶手木頭
+    ctx.strokeStyle = "#b98b5c";
     ctx.lineWidth = 10;
     ctx.beginPath();
-    ctx.moveTo(topX, 216);
-    ctx.lineTo(bottomX, 352);
+    ctx.moveTo(topX, 189);
+    ctx.lineTo(bottomX, 325);
     ctx.stroke();
 
-    // 扶手亮面
-    ctx.strokeStyle = "#e6ba83";
+    // 扶手高光
+    ctx.strokeStyle = "#e9bd85";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(topX, 214);
-    ctx.lineTo(bottomX, 350);
+    ctx.moveTo(topX, 186);
+    ctx.lineTo(bottomX, 322);
     ctx.stroke();
   }
 
-  drawStairRail(406, 345);
-  drawStairRail(520, 581);
+  // 左右扶手
+  drawWoodRail(385, 373);
+  drawWoodRail(541, 553);
+
+  ctx.lineCap = "butt";
+
 
   // ===== 最下方與地板交接 =====
   r(353, 409, 220, 8, "#49301f");
