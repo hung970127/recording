@@ -200,6 +200,24 @@
   opacity: 0.82;
 }
     
+   .suspect-avatar {
+  display: block;
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 3px solid transparent;
+}
+
+.suspect-avatar:hover {
+  border-color: #91c8ee;
+}
+
+.suspect.selected .suspect-avatar {
+  border-color: #ffe18c;
+}
+    
     .suspects {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -526,28 +544,24 @@ puzzleMusic.volume = 0.3;
   // 真正的駭客是羅思穎，編號 0
   const correctSuspect = 0;
 
-  const suspects = [
-    {
-      name: "羅思穎",
-      instrument: "電子音樂",
-      audio: "music/hacker.mp3"
-    },
-    {
-      name: "許宸瑋",
-      instrument: "中提琴",
-      audio: "music/viola.mp3"
-    },
-    {
-      name: "周裕軒",
-      instrument: "人聲",
-      audio: "music/vocal.mp3"
-    },
-    {
-      name: "洪昕妤",
-      instrument: "木吉他",
-      audio: "music/guitar.mp3"
-    }
-  ];
+ const suspects = [
+  {
+    image: "images/suspect1.png",
+    audio: "music/hacker.mp3"
+  },
+  {
+    image: "images/suspect2.png",
+    audio: "music/viola.mp3"
+  },
+  {
+    image: "images/suspect3.png",
+    audio: "music/vocal.mp3"
+  },
+  {
+    image: "images/suspect4.png",
+    audio: "music/guitar.mp3"
+  }
+];
 
   // ====================================
   // 畫圖工具
@@ -1052,64 +1066,59 @@ puzzleMusic.play().catch(err => {
   // 四位嫌疑人
   // ====================================
 
-  function showSuspects() {
+ function showSuspects() {
+  hideAllScreens();
 
-    hideAllScreens();
+  document.getElementById("suspectScreen")
+    .classList.add("active");
 
-    document
-      .getElementById("suspectScreen")
-      .classList.add("active");
+  const list = document.getElementById("suspectList");
+  list.innerHTML = "";
 
-    const list = document.getElementById("suspectList");
+  suspects.forEach((suspect, index) => {
+    const card = document.createElement("div");
+    card.className = "suspect";
 
-    list.innerHTML = "";
+    if (selectedSuspect === index) {
+      card.classList.add("selected");
+    }
 
-    suspects.forEach((suspect, index) => {
+    // 頭像
+    const avatar = document.createElement("img");
+    avatar.src = suspect.image;
+    avatar.className = "suspect-avatar";
+    avatar.alt = "嫌疑犯頭像";
 
-      const card = document.createElement("div");
+    avatar.onclick = () => {
+      selectedSuspect = index;
+      showSuspects();
+    };
 
-      card.className = "suspect";
+    // 播放／暫停
+    const playButton = document.createElement("button");
+    playButton.className = "suspect-play-btn";
+    playButton.dataset.index = index;
 
-      if (selectedSuspect === index) {
-        card.classList.add("selected");
-      }
+    playButton.textContent =
+      currentAudio &&
+      currentSuspectIndex === index &&
+      !currentAudio.paused
+        ? "⏸ 暫停"
+        : "▶ 播放";
 
-      const title = document.createElement("h3");
-      title.textContent = suspect.name;
+    playButton.onclick = () => playMusic(index);
 
-      const instrument = document.createElement("p");
-      instrument.textContent = suspect.instrument;
+    const selectText = document.createElement("p");
+    selectText.textContent =
+      selectedSuspect === index ? "✓ 已選擇" : "點擊頭像選擇";
 
-     const playButton = document.createElement("button");
-playButton.className = "suspect-play-btn";
-playButton.dataset.index = index;
+    card.appendChild(avatar);
+    card.appendChild(playButton);
+    card.appendChild(selectText);
 
-playButton.textContent =
-  currentAudio &&
-  currentSuspectIndex === index &&
-  !currentAudio.paused
-    ? "⏸ 暫停"
-    : "▶ 播放";
-
-playButton.onclick = () => playMusic(index);
-
-      const selectButton = document.createElement("button");
-      selectButton.textContent =
-        selectedSuspect === index ? "✓ 已選擇" : "指認此人";
-
-      selectButton.onclick = () => {
-        selectedSuspect = index;
-        showSuspects();
-      };
-
-      card.appendChild(title);
-      card.appendChild(instrument);
-      card.appendChild(playButton);
-      card.appendChild(selectButton);
-
-      list.appendChild(card);
-    });
-  }
+    list.appendChild(card);
+  });
+}
 
   // ====================================
   // 播放音樂
