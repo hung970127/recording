@@ -991,8 +991,9 @@ bunk(557,true);
 
 
 let transitionStart = 0;
-  function startGame() {
+ function startGame() {
   hideAllScreens();
+  startTimer();
 
 puzzleMusic.currentTime = 0;
 puzzleMusic.play().catch(err => {
@@ -1234,6 +1235,7 @@ function playMusic(index) {
 
  
 function confirmSuspect() {
+  if (gameOver) return;
 
   // 沒有選擇嫌疑犯
   if (selectedSuspect === -1) {
@@ -1249,6 +1251,9 @@ function confirmSuspect() {
     return;
   }
 
+stopTimer();
+document.getElementById("timer").style.display = "none";
+  
  // 選對：立即停止嫌疑犯音樂
 if (currentAudio) {
   currentAudio.pause();
