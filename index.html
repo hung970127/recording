@@ -1215,32 +1215,40 @@ function drawRoom() {
     r(foldX + 2, 184, 3, 18, blanketLight);
 
    
-    // ===== 床鋪安全護欄：靠樓梯一端保留入口 =====
-    // 左床右端、右床左端各留 65px 入口
-    const railX = mirror ? x + 78 : x + 12;
-    const railW = 189;
+   
+    // ===== 左右對稱的木製床鋪護欄 V3 =====
 
-    // 上下橫樑
-    wood(railX, 125, railW, 11);
-    wood(railX, 203, railW, 13);
+    // 左床右側留入口，右床左側留入口
+    const railStart = mirror ? x + 76 : x + 12;
+    const railWidth = 191;
 
-    // 垂直護欄
-    for (let i = 0; i < 4; i++) {
-      const px = railX + 17 + i * 43;
-      r(px, 136, 10, 67, "#694b32");
-      r(px + 2, 138, 5, 62, "#b58a5b");
-      r(px + 3, 140, 2, 57, "#d8ad78");
-      r(px, 137, 10, 3, "#e0b98a");
-      r(px, 198, 10, 4, "#523924");
+    // 護欄上橫樑
+    wood(railStart, 133, railWidth, 11);
+
+    // 護欄下橫樑
+    wood(railStart, 199, railWidth, 12);
+
+    // 等距排列五根直立木條
+    for (let i = 0; i < 5; i++) {
+      const px = railStart + 19 + i * 38;
+
+      // 木條陰影
+      r(px, 144, 9, 55, "#62442d");
+
+      // 木條正面
+      r(px + 2, 145, 5, 52, "#b88c5e");
+
+      // 木條高光
+      r(px + 3, 146, 2, 49, "#e0b483");
     }
 
-    // 外側床頭柱
-    const outerPost = mirror ? x + 254 : x + 12;
-    wood(outerPost, 119, 13, 98);
+    // 護欄外側主柱
+    const outerX = mirror ? x + 254 : x + 12;
+    wood(outerX, 121, 13, 94);
 
-    // 入口邊緣短柱，不阻擋通道
-    const entrancePost = mirror ? x + 78 : x + 189;
-    wood(entrancePost, 188, 10, 29);
+    // 靠樓梯的護欄末端柱
+    const innerX = mirror ? x + 76 : x + 190;
+    wood(innerX, 132, 11, 79);
 
 
     // 床架下方支撐橫樑
