@@ -1107,9 +1107,13 @@ function confirmSuspect() {
     return;
   }
 
-  if (currentAudio) {
-    currentAudio.pause();
-  }
+if (currentAudio) {
+  currentAudio.pause();
+  currentAudio.currentTime = 0;
+}
+
+// 指認後恢復解謎音樂
+puzzleMusic.play().catch(console.error);
 
   const isCorrect = selectedSuspect === correctSuspect;
 if (isCorrect) {
