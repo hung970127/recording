@@ -1785,7 +1785,8 @@ ctx.restore();
       );
     };
 
-  const phase = walking ? animationTime * 0.16 : 0;
+const walking = player.state === "walking";
+const phase = walking ? animationTime * 0.16 : 0;
 const step = Math.sin(phase);
 const bob = walking
   ? Math.round((1 - Math.cos(phase * 2)) * 0.5)
@@ -1841,20 +1842,6 @@ const bob = walking
     // 後腿先畫，讓前腿自然遮住後腿
     drawLeg(25, -stride, false);
     drawLeg(35, stride, true);
-
-
-
-    // 後腿
-    r(20, 54, 11, 10, "#303735");
-    r(20 + backStep, 62 - backLift, 10, 9, "#303735");
-    r(19 + backStep, 70 - backLift, 15, 4, "#242725");
-    r(19 + backStep, 73 - backLift, 16, 2, "#817b70");
-
-    // 前腿
-    r(29, 54, 10, 10, "#444b48");
-    r(29 + frontStep, 62 - frontLift, 10, 9, "#414845");
-    r(27 + frontStep, 70 - frontLift, 17, 4, "#292b29");
-    r(27 + frontStep, 73 - frontLift, 18, 2, "#938c7f");
 
     // ===== 後手臂 =====
 
