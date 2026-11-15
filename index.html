@@ -1759,374 +1759,99 @@ ctx.restore();
   // 主角
   // ====================================
 
+
+  // ====================================
+  // 主角：坐在椅子上，只有背影
+  // ====================================
+
   const player = {
-    x: 120,
-    y: 400,
-    targetX: 575,
-    speed: 1.0,
-    state: "walking"
+    x: 669,
+    y: 308,
+    state: "seated"
   };
 
- 
-
-  // ====================================
-  // 主角：45 度側身像素人物
-  // ====================================
-
- 
-
-
-function drawPlayer() {
-  const x = Math.round(player.x);
-  const y = Math.round(player.y);
-  const walking = player.state === "walking";
-
-  // ===== 小像素繪圖工具 =====
-  // 所有部位都以人物左上角為座標原點
-  const r = (dx, dy, w, h, color) => {
-    rectangle(
-      x + Math.round(dx),
-      y + Math.round(dy),
-      w,
-      h,
-      color
-    );
-  };
-
-  // ===== 色彩配置 =====
-  const C = {
-    hairDark: "#22232d",
-    hair: "#30313c",
-    hairMid: "#41414e",
-    hairLight: "#56515c",
-    goldDark: "#806847",
-    gold: "#c4a16c",
-    goldLight: "#e4c18a",
-
-    skinShadow: "#b98570",
-    skin: "#dfab8d",
-    skinLight: "#f1c5a7",
-    skinBright: "#f7d2b7",
-
-    shirtDark: "#425a53",
-    shirtShadow: "#536b60",
-    shirt: "#718a7a",
-    shirtLight: "#8da596",
-    shirtBright: "#a0b5a4",
-
-    pantsDark: "#252c34",
-    pants: "#39434c",
-    pantsLight: "#505a62",
-
-    shoeDark: "#272a30",
-    shoe: "#42444b",
-    shoeLight: "#777a80"
-  };
-
-  // ===== 八格走路動畫 =====
-  // 前後腿與手臂反向擺動
-  const frames = [
-    { back: -5, front:  5, lb: 0, lf: 0, arm:  3 },
-    { back: -3, front:  4, lb: 0, lf: 2, arm:  2 },
-    { back:  0, front:  1, lb: 0, lf: 3, arm:  0 },
-    { back:  4, front: -3, lb: 2, lf: 0, arm: -2 },
-    { back:  5, front: -5, lb: 0, lf: 0, arm: -3 },
-    { back:  4, front: -3, lb: 2, lf: 0, arm: -2 },
-    { back:  1, front:  0, lb: 3, lf: 0, arm:  0 },
-    { back: -3, front:  4, lb: 0, lf: 2, arm:  2 }
-  ];
-
-  const frameIndex = walking
-    ? Math.floor(animationTime / 5) % 8
-    : 0;
-
-  const f = walking
-    ? frames[frameIndex]
-    : { back: -2, front: 2, lb: 0, lf: 0, arm: 0 };
-
-  const bob = walking &&
-    (frameIndex === 2 || frameIndex === 6) ? 1 : 0;
-
-  // ===== 地面陰影 =====
-  r(14, 76, 33, 2, "#302b2d");
-  r(20, 78, 22, 1, "#4a4040");
-
-ctx.save();
-ctx.translate(x + 32, y + 76 - bob);
-ctx.scale(0.91, 0.88);
-ctx.translate(-(x + 32), -(y + 76));
-
-  // =====================================
-  // 1. 後腿
-  // =====================================
-  const backX = f.back;
-  const backLift = f.lb;
-
-  r(23, 54, 9, 8, C.pantsDark);
-  r(24, 57, 7, 6, C.pants);
-
-  r(
-    24 + Math.round(backX * 0.35),
-    62,
-    7, 7,
-    C.pantsDark
-  );
-
-  r(
-    24 + Math.round(backX * 0.7),
-    67 - backLift,
-    7, 6,
-    C.pants
-  );
-
-  // 後腳鞋子
-  r(21 + backX, 72 - backLift, 11, 4, C.shoeDark);
-  r(19 + backX, 74 - backLift, 15, 3, C.shoe);
-  r(19 + backX, 76 - backLift, 15, 1, C.shoeLight);
-
-  // =====================================
-  // 2. 前腿
-  // =====================================
-  const frontX = f.front;
-  const frontLift = f.lf;
-
-  r(32, 54, 10, 8, C.pants);
-  r(34, 57, 6, 5, C.pantsLight);
-
-  r(
-    33 + Math.round(frontX * 0.35),
-    62,
-    8, 7,
-    C.pants
-  );
-
-  r(
-    33 + Math.round(frontX * 0.7),
-    67 - frontLift,
-    8, 6,
-    C.pantsDark
-  );
-
-  // 前腳鞋子
-  r(30 + frontX, 72 - frontLift, 12, 4, C.shoeDark);
-  r(28 + frontX, 74 - frontLift, 16, 3, C.shoe);
-  r(28 + frontX, 76 - frontLift, 16, 1, C.shoeLight);
-
-  // 褲子細節
-  r(27, 58, 3, 1, C.pantsLight);
-  r(35, 60, 3, 1, C.pantsLight);
-
-  // =====================================
-  // 3. 後手臂
-  // =====================================
-  const backArm = Math.round(f.arm * 0.55);
-
-  // 肩膀
-  r(17, 36, 9, 10, C.shirtDark);
-  r(18, 38, 7, 7, C.shirtShadow);
-
-  // 袖子
-  r(17, 43, 8, 6, C.shirt);
-  r(18, 47, 7, 3, C.shirtDark);
-
-  // 上臂
-  r(18, 49, 6, 5, C.skinShadow);
-  r(18 + backArm, 52, 6, 5, C.skin);
-
-  // 前臂與手
-  r(19 + backArm, 56, 6, 4, C.skin);
-  r(20 + backArm, 59, 5, 3, C.skinLight);
-
-  // =====================================
-  // 4. 寬鬆灰綠色上衣
-  // =====================================
-
-  // 身體外輪廓
-  r(22, 34, 18, 24, C.shirtDark);
-  r(24, 35, 17, 22, C.shirt);
-  r(27, 36, 13, 20, C.shirtLight);
-
-  // 背部輪廓
-  r(20, 38, 5, 17, C.shirtShadow);
-  r(21, 36, 5, 5, C.shirt);
-
-  // 胸口高光
-  r(32, 38, 7, 10, C.shirtBright);
-  r(35, 40, 5, 8, C.shirtLight);
-
-  // 衣服自然皺褶
-  r(24, 43, 4, 1, C.shirtLight);
-  r(26, 47, 5, 1, C.shirtShadow);
-  r(31, 51, 7, 1, C.shirtShadow);
-  r(23, 53, 5, 1, C.shirtDark);
-  r(35, 54, 4, 1, C.shirtShadow);
-
-  // 寬鬆衣擺
-  r(20, 55, 22, 4, C.shirt);
-  r(22, 58, 19, 2, C.shirtDark);
-  r(25, 57, 11, 1, C.shirtLight);
-
-  // =====================================
-  // 5. 前側肩膀與袖子
-  // =====================================
-  r(36, 35, 8, 7, C.shirt);
-  r(39, 38, 7, 9, C.shirtShadow);
-  r(41, 42, 6, 5, C.shirtDark);
-
-  // =====================================
-  // 6. 前手臂：整隻手自然擺動
-  // =====================================
-  const frontArm = Math.round(-f.arm * 0.55);
-
-  // 肩膀連接處
-  r(41, 46, 6, 5, C.skinShadow);
-
-  // 上臂
-  r(41, 49, 6, 5, C.skin);
-  r(41 + frontArm, 53, 6, 5, C.skin);
-
-  // 前臂
-  r(41 + frontArm, 57, 6, 4, C.skinLight);
-
-  // 手掌
-  r(42 + frontArm, 60, 5, 3, C.skin);
-  r(43 + frontArm, 62, 3, 1, C.skinShadow);
-
-  // =====================================
-  // 7. 脖子
-  // =====================================
-  r(28, 28, 8, 8, C.skinShadow);
-  r(30, 29, 7, 6, C.skin);
-  r(32, 30, 4, 4, C.skinLight);
-
-  // 衣領
-  r(26, 34, 11, 3, C.shirtDark);
-  r(29, 34, 7, 2, C.shirtShadow);
-ctx.restore();
-
-ctx.save();
-ctx.translate(x + 32, y + 32 - bob);
-ctx.rotate(0.07);
-ctx.scale(1.12, 1.12);
-ctx.translate(-(x + 32), -(y + 32));
-  
-  // =====================================
-  // 8. 後方頭髮
-  // =====================================
-
-  // 髮型輪廓：中長髮，但不是厚重頭盔
-  r(17, 10, 20, 21, C.hairDark);
-  r(15, 15, 8, 18, C.hair);
-  r(17, 28, 9, 8, C.hairDark);
-
-  // 後方髮束
-  r(15, 23, 4, 10, C.hairMid);
-  r(18, 27, 3, 9, C.hair);
-  r(22, 30, 3, 6, C.hairDark);
-
-  // 黃色髮尾：低調漸層
-  r(15, 31, 4, 4, C.goldDark);
-  r(16, 34, 5, 4, C.gold);
-  r(19, 35, 4, 4, C.goldLight);
-  r(23, 33, 3, 4, C.gold);
-
-  // 髮束分離
-  r(17, 34, 1, 3, C.hairDark);
-  r(21, 35, 1, 3, C.hair);
-
-  // =====================================
-  // 9. 可愛少年臉型
-  // =====================================
-
-  // 頭部稍微圓潤、臉比較短
-  r(23, 13, 15, 14, C.skinShadow);
-  r(25, 15, 15, 12, C.skin);
-  r(30, 17, 11, 9, C.skinLight);
-
-  // 額頭和臉頰高光
-  r(29, 17, 6, 4, C.skinBright);
-  r(34, 21, 6, 4, C.skinBright);
-
-  // 臉頰與圓潤下巴
-  r(26, 25, 13, 3, C.skin);
-  r(29, 28, 9, 2, C.skinShadow);
-  r(32, 29, 5, 1, C.skin);
-
-  // 小耳朵
-  r(22, 20, 4, 5, C.skinShadow);
-  r(23, 21, 3, 3, C.skin);
-  r(23, 23, 1, 1, "#a97566");
-
-  // =====================================
-  // 10. 蓬鬆黑色碎髮
-  // =====================================
-
-  // 頭頂：柔和圓弧輪廓
-  r(19, 7, 18, 9, C.hairDark);
-  r(22, 5, 15, 8, C.hair);
-  r(26, 4, 10, 5, C.hairMid);
-
-  // 蓬鬆髮束
-  r(18, 10, 8, 7, C.hair);
-  r(20, 8, 9, 3, C.hairMid);
-  r(25, 6, 8, 2, C.hairLight);
-
-  // 自然碎瀏海
-  r(25, 11, 12, 5, C.hair);
-  r(30, 10, 9, 5, C.hairDark);
-
-  // 三束不規則瀏海
-  r(25, 14, 4, 5, C.hair);
-  r(30, 13, 3, 4, C.hairMid);
-  r(35, 13, 5, 4, C.hairDark);
-
-  // 頭頂亮面
-  r(24, 8, 5, 1, C.hairLight);
-  r(30, 6, 4, 1, C.hairLight);
-
-  // 左側鬢髮
-  r(16, 17, 5, 13, C.hairDark);
-  r(18, 26, 4, 8, C.hair);
-  r(20, 30, 2, 4, C.hairMid);
-
-  // 右側髮束
-  r(38, 15, 4, 9, C.hairDark);
-  r(39, 22, 3, 5, C.hair);
-
-  // 右側黃色髮尾
-  r(39, 26, 3, 3, C.goldDark);
-  r(39, 29, 4, 3, C.gold);
-  r(40, 31, 3, 2, C.goldLight);
-
-  // =====================================
-  // 11. 五官：清秀可愛，但仍是男生
-  // =====================================
-
-  // 平直細眉
-  r(28, 19, 4, 1, "#51434a");
-  r(35, 19, 4, 1, "#51434a");
-
-  // 眼睛：比原版有神，但不誇張
-  r(28, 21, 4, 3, "#292b36");
-  r(35, 21, 4, 3, "#292b36");
-
-  // 眼睛高光
-  r(29, 21, 1, 1, "#f8f2e8");
-  r(36, 21, 1, 1, "#f8f2e8");
-
-  // 眼睛下方柔和陰影
-  r(29, 24, 3, 1, "#c8947f");
-  r(36, 24, 3, 1, "#c8947f");
-
-  // 小鼻子
-  r(40, 24, 2, 1, "#c48f7a");
-
-  // 微微上揚的嘴角
-  r(35, 27, 3, 1, "#9f6e69");
-  r(38, 26, 1, 1, "#9f6e69");
-
-  ctx.restore();
-}
+  function drawPlayer() {
+    const x = Math.round(player.x);
+    const y = Math.round(player.y);
+
+    const r = (dx, dy, w, h, color) => {
+      rectangle(x + dx, y + dy, w, h, color);
+    };
+
+    // ===== 椅背 =====
+    r(-5, 24, 55, 37, "#363b3c");
+    r(-2, 26, 49, 31, "#77736b");
+    r(2, 29, 41, 25, "#59564f");
+
+    // ===== 坐著的雙腿 =====
+    r(6, 49, 37, 15, "#303741");
+
+    r(7, 59, 13, 25, "#39434c");
+    r(29, 59, 13, 25, "#39434c");
+
+    // 鞋子
+    r(6, 79, 16, 5, "#292c34");
+    r(28, 79, 16, 5, "#292c34");
+
+    // ===== 左手臂 =====
+    r(-3, 29, 10, 26, "#536c60");
+    r(-1, 45, 8, 13, "#e0ad90");
+
+    // ===== 右手臂 =====
+    r(40, 29, 10, 26, "#536c60");
+    r(42, 45, 8, 13, "#e0ad90");
+
+    // ===== 灰綠色寬鬆上衣 =====
+    r(5, 27, 36, 33, "#43594f");
+    r(8, 29, 30, 28, "#718a78");
+    r(12, 32, 23, 23, "#849b89");
+
+    // 衣服陰影
+    r(13, 40, 4, 12, "#6a8272");
+    r(27, 45, 8, 2, "#647c6c");
+    r(8, 56, 31, 5, "#43594f");
+
+    // ===== 脖子與衣領 =====
+    r(17, 24, 14, 8, "#d5a086");
+    r(14, 29, 20, 5, "#40574d");
+
+    // ===== 可愛的圓頭背影 =====
+    // 完全不畫五官
+
+    // 頭髮主體
+    r(10, 3, 29, 24, "#242630");
+    r(7, 9, 36, 17, "#2c2e3a");
+
+    // 頭頂蓬鬆碎髮
+    r(12, 1, 24, 7, "#343643");
+    r(16, 0, 17, 5, "#41414d");
+
+    // 後腦勺
+    r(10, 17, 33, 14, "#2b2d38");
+
+    // 左側中長髮
+    r(13, 25, 9, 11, "#292b35");
+
+    // 右側中長髮
+    r(30, 25, 10, 10, "#292b35");
+
+    // 頭髮高光
+    r(16, 7, 6, 2, "#555361");
+    r(25, 5, 7, 2, "#50505b");
+
+    // ===== 金黃色髮尾 =====
+    // 左側
+    r(11, 29, 8, 4, "#927348");
+    r(13, 33, 8, 4, "#d0a76b");
+
+    // 右側
+    r(31, 29, 9, 4, "#98774d");
+    r(32, 33, 8, 4, "#d0a76b");
+
+    // 髮尾亮面
+    r(15, 36, 5, 2, "#e1be85");
+    r(34, 36, 5, 2, "#e1be85");
+  }
 
 
   // ====================================
@@ -2153,90 +1878,67 @@ ctx.translate(-(x + 32), -(y + 32));
   }
 
 
+
 let transitionStart = 0;
- function startGame() {
+let clueShown = false;
+let seatedSceneTimer = null;
+
+function startGame() {
   hideAllScreens();
 
-puzzleMusic.currentTime = 0;
-puzzleMusic.play().catch(err => {
-  console.log("解謎音樂播放失敗：", err);
-});
-    
+  puzzleMusic.currentTime = 0;
+  puzzleMusic.play().catch(err => {
+    console.log("解謎音樂播放失敗：", err);
+  });
+
   gameStarted = false;
   animationTime = 0;
   clueShown = false;
 
-  player.x = 120;
-  player.state = "idle";
+  // 固定坐在椅子上
+  player.x = 669;
+  player.y = 308;
+  player.state = "seated";
 
   hideDialogue();
 
-  const flash = document.getElementById("flash");
+  if (seatedSceneTimer !== null) {
+    clearTimeout(seatedSceneTimer);
+  }
 
-  // 白光閃過，逐漸露出宿舍
+  const flash = document.getElementById("flash");
   flash.classList.remove("active");
-    transitionStart = performance.now();
+
+  transitionStart = performance.now();
   void flash.offsetWidth;
   flash.classList.add("active");
 
-  // 2 秒後主角漸漸出現
   canvas.style.opacity = "1";
 
-  // 4 秒後才開始走路
-  setTimeout(() => {
-    player.state = "walking";
+  // 白光淡去後顯示對話
+  seatedSceneTimer = setTimeout(() => {
+    if (gameOver) return;
+
     gameStarted = true;
-    showDialogue("主角：電腦好像被入侵了……");
-  }, 4000);
+    showDialogue("主角：線索就在這裡……");
+
+    // 3.5 秒後顯示線索
+    seatedSceneTimer = setTimeout(() => {
+      if (gameOver || clueShown) return;
+
+      clueShown = true;
+      hideDialogue();
+      showClues();
+    }, 3500);
+
+  }, 3000);
 }
 
+// 主角不再走路
+function updatePlayer() {
+  // 固定坐姿，不更新位置
+}
 
-  // ====================================
-  // 主角自動走路與撿拾
-  // ====================================
-
-  let clueShown = false;
-
-  function updatePlayer() {
-
-    if (!gameStarted) return;
-
-    animationTime++;
-
-    if (player.state === "walking") {
-
-      player.x += player.speed;
-
-      if (player.x >= player.targetX) {
-        player.x = player.targetX;
-        player.state = "investigating";
-
-        showDialogue(
-          "主角：奇怪……地上怎麼有東西？"
-        );
-      }
-    }
-
-    if (player.state === "investigating") {
-
-      if (animationTime > 260) {
-        player.state = "picking";
-        showDialogue("主角：這是什麼線索？");
-      }
-    }
-
-    if (player.state === "picking") {
-
-      if (animationTime > 340 && !clueShown) {
-        clueShown = true;
-        player.state = "finished";
-
-        hideDialogue();
-
-        setTimeout(showClues, 800);
-      }
-    }
-  }
 
   // ====================================
   // 同時顯示兩個線索
@@ -2479,28 +2181,17 @@ if (currentAudio) {
   // 遊戲主迴圈
   // ====================================
 
-  function gameLoop() {
 
-    ctx.clearRect(0, 0, 960, 540);
+function gameLoop() {
+  ctx.clearRect(0, 0, 960, 540);
 
-    drawRoom();
-    updatePlayer();
-   
-if (!gameStarted && player.state === "idle") {
-  const flash = document.getElementById("flash");
+  drawRoom();
+  updatePlayer();
+  drawPlayer();
 
-  if (flash.classList.contains("active")) {
-    const elapsed = performance.now() - transitionStart;
-    ctx.globalAlpha = Math.min(1, Math.max(0, (elapsed - 1500) / 1500));
-  }
+  requestAnimationFrame(gameLoop);
 }
 
-drawPlayer();
-ctx.globalAlpha = 1;
-
-
-    requestAnimationFrame(gameLoop);
-  }
 
   // 初始化
   gameLoop();
