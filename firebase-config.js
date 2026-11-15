@@ -10,4 +10,5 @@ export const firebaseConfig = {
   measurementId: "G-BRWW12VV9V"
 };
 
-export const ADMIN_UID = "稍後填入主持人UID";
+
+export const ADMIN_UID = "kHcS4b30p0RkVRAXQ2gWTsECvB73";
