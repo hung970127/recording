@@ -1781,10 +1781,19 @@ function drawPlayer() {
     );
   };
 
-  const walking = player.state === "walking";
-  const phase = animationTime * 0.2;
-  const stride = walking ? Math.round(Math.sin(phase) * 5) : 0;
-  const bob = walking ? Math.round(Math.abs(Math.sin(phase)) * 2) : 0;
+ const walking = player.state === "walking";
+const phase = animationTime * 0.13;
+
+// 腳步前後交替
+const step = walking ? Math.sin(phase) : 0;
+
+// 步幅縮小，避免雙腿滑動
+const stride = Math.round(step * 3);
+
+// 身體只上下移動 1px
+const bob = walking
+  ? Math.round(Math.abs(Math.sin(phase * 2)) * 1)
+  : 0;
 
   ctx.save();
   ctx.translate(0, -bob);
@@ -1792,23 +1801,40 @@ function drawPlayer() {
   // ===== 地面陰影 =====
   r(5, 73 + bob, 39, 4, "#30231c");
 
-  // ===== 雙腿 =====
-  const leftLeg = stride;
-  const rightLeg = -stride;
 
-  // 左褲管
-  r(13 + leftLeg, 53, 11, 15, "#363b3a");
-  r(15 + leftLeg, 55, 3, 10, "#505553");
+  // ===== 自然走路動畫 =====
 
-  // 右褲管
-  r(27 + rightLeg, 53, 11, 15, "#2b302f");
-  r(29 + rightLeg, 55, 3, 10, "#464b49");
+  const leftStep = walking ? Math.round(Math.sin(phase) * 3) : 0;
+  const rightStep = walking ? Math.round(-Math.sin(phase) * 3) : 0;
 
-  // 鞋子
-  r(10 + leftLeg, 67, 16, 6, "#252524");
-  r(25 + rightLeg, 67, 17, 6, "#252524");
-  r(10 + leftLeg, 72, 17, 2, "#827d72");
-  r(25 + rightLeg, 72, 18, 2, "#827d72");
+  // 腳抬起的高度
+  const leftLift = walking
+    ? Math.round(Math.max(0, Math.sin(phase)) * 3)
+    : 0;
+
+  const rightLift = walking
+    ? Math.round(Math.max(0, -Math.sin(phase)) * 3)
+    : 0;
+
+  // 褲子上半部固定，避免腿從身體分離
+  r(13, 53, 25, 7, "#343a39");
+
+  // 左腿
+  r(14, 59, 10, 7, "#363b3a");
+  r(14 + leftStep, 64 - leftLift, 10, 5, "#363b3a");
+
+  // 右腿
+  r(27, 59, 10, 7, "#2b302f");
+  r(27 + rightStep, 64 - rightLift, 10, 5, "#2b302f");
+
+  // 左鞋
+  r(11 + leftStep, 68 - leftLift, 15, 5, "#252524");
+  r(11 + leftStep, 72 - leftLift, 16, 2, "#827d72");
+
+  // 右鞋
+  r(25 + rightStep, 68 - rightLift, 16, 5, "#252524");
+  r(25 + rightStep, 72 - rightLift, 17, 2, "#827d72");
+
 
   // ===== 脖子 =====
   r(21, 27, 11, 9, "#a8795d");
@@ -1845,14 +1871,15 @@ function drawPlayer() {
   r(11, 56, 30, 3, "#4a5d51");
 
   // ===== 手臂 =====
-  const arm = walking ? Math.round(stride * 0.5) : 0;
+const arm = walking ? Math.round(Math.sin(phase) * 2) : 0;
 
-  r(7, 46 + arm, 8, 11, "#b98567");
-  r(9, 48 + arm, 4, 8, "#d09b78");
+// 左手：與右腳同步
+r(7, 46 - arm, 8, 11, "#b98567");
+r(9, 48 - arm, 4, 8, "#d09b78");
 
-  r(38, 46 - arm, 8, 11, "#a9775d");
-  r(40, 48 - arm, 4, 8, "#c28e6d");
-
+// 右手：與左腳同步
+r(38, 46 + arm, 8, 11, "#a9775d");
+r(40, 48 + arm, 4, 8, "#c28e6d");
  
   // ===== 頭部：自然比例的中長髮男生 =====
 
