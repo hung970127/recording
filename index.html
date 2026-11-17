@@ -475,7 +475,21 @@
   <!-- 兩個線索同時顯示 -->
   <div id="clueScreen" class="screen">
     <h2>發現神祕線索</h2>
-
+<div id="clueDialogue" style="
+  display:none;
+  position:absolute;
+  bottom:15px;
+  left:8%;
+  width:84%;
+  padding:18px;
+  background:rgba(9,15,30,0.96);
+  border:3px solid #9abbd1;
+  color:white;
+  font-size:20px;
+  text-align:left;
+  z-index:10;
+"></div>
+    
     <div class="clues">
 
     <div class="clue">
@@ -1926,24 +1940,34 @@ function startGame() {
 
   canvas.style.opacity = "1";
 
-  // 白光淡去後顯示對話
+   // 白光淡去後，主角開始說話
   seatedSceneTimer = setTimeout(() => {
     if (gameOver) return;
 
     gameStarted = true;
-    showDialogue("主角：線索就在這裡……");
 
-    // 3.5 秒後顯示線索
+    showDialogue("主角：奇怪……這裡好像有什麼東西。");
+
     seatedSceneTimer = setTimeout(() => {
-      if (gameOver || clueShown) return;
+      showDialogue("主角：等等！線索好像就在這裡！");
 
-      clueShown = true;
-      hideDialogue();
-      showClues();
-    }, 3500);
+      seatedSceneTimer = setTimeout(() => {
+        showDialogue("主角：如果能看懂這些東西，說不定就能找到駭客留下的痕跡。");
+
+        seatedSceneTimer = setTimeout(() => {
+          if (gameOver || clueShown) return;
+
+          clueShown = true;
+          hideDialogue();
+          showClues();
+
+        }, 4000);
+
+      }, 3500);
+
+    }, 3000);
 
   }, 3000);
-}
 
 // 主角不再走路
 function updatePlayer() {
@@ -1983,15 +2007,57 @@ async function showClues() {
     // 告訴所有觀眾目前是哪一場投票
     await set(ref(firebaseDB, "currentSession"), sessionId);
 
-    // 投票建立成功後，才顯示線索與倒數
+       // ===== 顯示線索 =====
     hideAllScreens();
 
     document.getElementById("clueScreen")
       .classList.add("active");
 
-    startTimer();
+    const clueDialogue = document.getElementById("clueDialogue");
 
-document.getElementById("revealResultsButton").style.display = "block";
+    clueDialogue.style.display = "block";
+    clueDialogue.textContent =
+      "主角：這是……樂譜？旁邊還有一張奇怪的便條紙。";
+
+    setTimeout(() => {
+      if (gameOver) return;
+
+      clueDialogue.textContent =
+        "主角：可是，這上面到底寫了什麼？";
+
+      setTimeout(() => {
+        if (gameOver) return;
+
+        clueDialogue.textContent =
+          "主角：我一個人實在看不懂……可以麻煩你們幫我解出來嗎？";
+
+        setTimeout(() => {
+          if (gameOver) return;
+
+          clueDialogue.textContent =
+            "主角：說不定答案就藏在這些音符裡！";
+
+          setTimeout(() => {
+            if (gameOver) return;
+
+            clueDialogue.style.display = "none";
+
+            // 對話結束後，才正式開始五分鐘倒數
+            votingEndsAt = Date.now() + 300000;
+
+            startTimer();
+
+            document.getElementById(
+              "revealResultsButton"
+            ).style.display = "block";
+
+          }, 3500);
+
+        }, 4000);
+
+      }, 3000);
+
+    }, 3500);
 
   } catch (error) {
     console.error("建立投票場次失敗：", error);
