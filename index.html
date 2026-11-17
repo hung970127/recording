@@ -2150,45 +2150,30 @@ async function showClues() {
     clueDialogue.textContent =
       "主角：這是……樂譜？旁邊還有一張奇怪的便條紙。";
 
-    setTimeout(() => {
-      if (gameOver) return;
+  setTimeout(() => {
+  if (gameOver) return;
 
-      clueDialogue.textContent =
-        "主角：可是，這上面到底寫了什麼？";
+  clueDialogue.textContent =
+    "主角：等等！這裡還有一個 QR Code！可以麻煩大家拿出手機，掃描上面的 QR Code，幫我找出真正的駭客是誰嗎？";
 
-      setTimeout(() => {
-        if (gameOver) return;
+  // 給觀眾 7 秒閱讀新台詞
+  setTimeout(() => {
+    if (gameOver) return;
 
-        clueDialogue.textContent =
-          "主角：我一個人實在看不懂……可以麻煩你們幫我解出來嗎？";
+    clueDialogue.style.display = "none";
 
-        setTimeout(() => {
-          if (gameOver) return;
+    // 對話結束後，正式開始五分鐘倒數
+    votingEndsAt = Date.now() + 300000;
 
-          clueDialogue.textContent =
-            "主角：說不定答案就藏在這些音符裡！";
+    startTimer();
 
-          setTimeout(() => {
-            if (gameOver) return;
+    document.getElementById(
+      "revealResultsButton"
+    ).style.display = "block";
 
-            clueDialogue.style.display = "none";
+  }, 7000);
 
-            // 對話結束後，才正式開始五分鐘倒數
-            votingEndsAt = Date.now() + 300000;
-
-            startTimer();
-
-            document.getElementById(
-              "revealResultsButton"
-            ).style.display = "block";
-
-          }, 3500);
-
-        }, 4000);
-
-      }, 3000);
-
-    }, 3500);
+}, 3500);
 
   } catch (error) {
     console.error("建立投票場次失敗：", error);
