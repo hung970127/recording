@@ -83,21 +83,41 @@
   left: 0;
   width: 100%;
   height: 33.33%;
-
-  padding: 30px 45px;
+  padding: 25px 40px 65px;
 
   background: rgba(9, 15, 30, 0.95);
   border: 4px solid #9abbd1;
-
   color: white;
   font-size: clamp(20px, 2.8vw, 36px);
-  line-height: 1.7;
-
+  line-height: 1.6;
   text-align: left;
-  overflow-y: auto;
   z-index: 40;
-
   display: none;
+  overflow-y: auto;
+}
+
+#dialogueNext {
+  position: absolute;
+  right: 25px;
+  bottom: 15px;
+  margin: 0;
+  padding: 7px 16px;
+  background: transparent;
+  border: none;
+  color: #92d8ff;
+  font-size: clamp(16px, 1.8vw, 24px);
+  font-weight: bold;
+  cursor: pointer;
+  animation: continueBlink 1.2s infinite alternate;
+}
+
+#dialogueNext:hover {
+  color: white;
+}
+
+@keyframes continueBlink {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
 }
 
     .clues {
@@ -452,7 +472,11 @@
   
   <canvas id="canvas" width="960" height="540"></canvas>
 
-  <div id="dialogue"></div>
+<div id="dialogue">
+  <div id="dialogueText"></div>
+  <button id="dialogueNext" type="button">繼續 ▶</button>
+</div>
+  
 <div id="flash"></div>
   <div id="videoTransition"></div>
   
@@ -1927,14 +1951,39 @@ ctx.restore();
   // 對話
   // ====================================
 
-  function showDialogue(message) {
-    dialogue.style.display = "block";
-    dialogue.textContent = message;
-  }
+  const dialogueText = document.getElementById("dialogueText");
+const dialogueNext = document.getElementById("dialogueNext");
 
-  function hideDialogue() {
-    dialogue.style.display = "none";
+let dialogueIndex = 0;
+
+const dialogueLines = [
+  "主角：奇怪……這裡好像有什麼東西。",
+  "主角：等等！線索好像就在這裡！",
+  "主角：如果能看懂這些東西，說不定就能找到駭客留下的痕跡。"
+];
+
+function showDialogue(message) {
+  dialogue.style.display = "block";
+  dialogueText.textContent = message;
+}
+
+function hideDialogue() {
+  dialogue.style.display = "none";
+}
+
+dialogueNext.addEventListener("click", () => {
+  if (gameOver || clueShown) return;
+
+  dialogueIndex++;
+
+  if (dialogueIndex < dialogueLines.length) {
+    showDialogue(dialogueLines[dialogueIndex]);
+  } else {
+    clueShown = true;
+    hideDialogue();
+    showClues();
   }
+});
 
   // ====================================
   // 開始遊戲
