@@ -416,7 +416,8 @@
   font-size: clamp(9px, 1.1vw, 15px);
   text-align: center;
 }
-  /* ===== 前導影片白光轉場 ===== */
+ 
+    /* ===== 前導影片白光轉場 ===== */
 #videoTransition {
   position: absolute;
   inset: 0;
@@ -424,7 +425,7 @@
   opacity: 0;
   pointer-events: none;
   z-index: 100;
-  transition: opacity 1.5s ease-in-out;
+ transition: opacity 1.5s ease-in-out;
 }
 
 #videoTransition.active {
@@ -821,28 +822,33 @@ storyVideo.addEventListener("ended", finishCurrentVideo);
 function startOpening() {
   const transition = document.getElementById("videoTransition");
 
-  // 防止重複點擊
   if (transition.classList.contains("active")) return;
 
-  // 白光逐漸覆蓋畫面
+  // 開始白光漸亮
   transition.classList.add("active");
 
+  // 白光完全覆蓋後再切換影片
   setTimeout(() => {
+    const onVideoPlaying = () => {
+      storyVideo.removeEventListener("playing", onVideoPlaying);
 
-    // 等待影片真正開始播放
-    storyVideo.addEventListener("playing", function onVideoPlaying() {
-      transition.classList.remove("active");
-    }, { once: true });
+      // 影片開始播放後，白光淡出
+      requestAnimationFrame(() => {
+        transition.classList.remove("active");
+      });
+    };
+
+    storyVideo.addEventListener("playing", onVideoPlaying);
 
     playStoryVideo(
       "https://github.com/hung970127/recording/releases/download/v1.0/videofinal.mp4",
       () => {
+        storyVideo.removeEventListener("playing", onVideoPlaying);
         transition.classList.remove("active");
         startGame();
       }
     );
-
-  }, 650);
+  }, 1500);
 }
   
   const canvas = document.getElementById("canvas");
