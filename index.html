@@ -763,22 +763,26 @@ storyVideo.addEventListener("ended", finishCurrentVideo);
 function startOpening() {
   const transition = document.getElementById("videoTransition");
 
+  // 防止重複點擊
+  if (transition.classList.contains("active")) return;
+
   // 白光逐漸覆蓋畫面
   transition.classList.add("active");
 
   setTimeout(() => {
-    // 白光覆蓋時開始播放影片
+
+    // 等待影片真正開始播放
+    storyVideo.addEventListener("playing", function onVideoPlaying() {
+      transition.classList.remove("active");
+    }, { once: true });
+
     playStoryVideo(
       "https://github.com/hung970127/recording/releases/download/v1.0/videofinal.mp4",
       () => {
+        transition.classList.remove("active");
         startGame();
       }
     );
-
-    // 白光淡出，顯示影片
-    setTimeout(() => {
-      transition.classList.remove("active");
-    }, 300);
 
   }, 650);
 }
