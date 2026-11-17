@@ -2064,7 +2064,35 @@ seatedSceneTimer = setTimeout(() => {
   gameStarted = true;
   dialogueIndex = 0;
 
-  showDialogue(dialogueLines[dialogueIndex]);
+  showDialogue(dialogueLines[0]);
+
+  // 3 秒後顯示第二句
+  seatedSceneTimer = setTimeout(() => {
+    if (gameOver) return;
+
+    dialogueIndex = 1;
+    showDialogue(dialogueLines[1]);
+
+    // 3.5 秒後顯示第三句
+    seatedSceneTimer = setTimeout(() => {
+      if (gameOver) return;
+
+      dialogueIndex = 2;
+      showDialogue(dialogueLines[2]);
+
+      // 4 秒後自動進入線索畫面
+      seatedSceneTimer = setTimeout(() => {
+        if (gameOver) return;
+
+        clueShown = true;
+        hideDialogue();
+        showClues();
+
+      }, 4000);
+
+    }, 3500);
+
+  }, 3000);
 
 }, 3000);
 }
