@@ -2032,35 +2032,16 @@ function startGame() {
   flash.classList.add("active");
 
   canvas.style.opacity = "1";
+// 白光淡去後，主角開始說話
+seatedSceneTimer = setTimeout(() => {
+  if (gameOver) return;
 
-   // 白光淡去後，主角開始說話
-  seatedSceneTimer = setTimeout(() => {
-    if (gameOver) return;
+  gameStarted = true;
+  dialogueIndex = 0;
 
-    gameStarted = true;
+  showDialogue(dialogueLines[dialogueIndex]);
 
-    showDialogue("主角：奇怪……這裡好像有什麼東西。");
-
-    seatedSceneTimer = setTimeout(() => {
-      showDialogue("主角：等等！線索好像就在這裡！");
-
-      seatedSceneTimer = setTimeout(() => {
-        showDialogue("主角：如果能看懂這些東西，說不定就能找到駭客留下的痕跡。");
-
-        seatedSceneTimer = setTimeout(() => {
-          if (gameOver || clueShown) return;
-
-          clueShown = true;
-          hideDialogue();
-          showClues();
-
-        }, 4000);
-
-      }, 3500);
-
-    }, 3000);
-
-   }, 3000);
+}, 3000);
 }
 
 // 主角不再走路
