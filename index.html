@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>錄音期中：駭客在哪裡</title>
 
-  <style>
+  <style> 
     * {
       box-sizing: border-box;
     }
@@ -450,6 +450,78 @@
   from { opacity: 0.5; }
   to { opacity: 1; }
 }
+#resultScreen {
+  gap: 12px;
+  overflow-y: auto;
+}
+
+#resultScreen h1 {
+  margin: 0;
+}
+
+#resultTotal {
+  font-size: 22px;
+  color: #ffe18c;
+  margin: 0 0 8px;
+}
+
+#resultCards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  width: 95%;
+}
+
+.result-card {
+  background: #263954;
+  border: 3px solid #647b9c;
+  border-radius: 8px;
+  padding: 14px 8px;
+  text-align: center;
+  min-width: 0;
+}
+
+.result-card img {
+  width: min(100%, 150px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 3px solid #91c8ee;
+  border-radius: 6px;
+}
+
+.result-name {
+  font-size: clamp(14px, 1.8vw, 22px);
+  margin: 10px 0;
+}
+
+.result-votes {
+  color: #ffe18c;
+  font-size: clamp(17px, 2.3vw, 30px);
+  font-weight: bold;
+}
+
+.result-percent {
+  color: #92d8ff;
+  font-size: clamp(24px, 3.3vw, 42px);
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.result-bar {
+  height: 12px;
+  background: #101827;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.result-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #92d8ff;
+  border-radius: 8px;
+}
     
   </style>
 </head>
@@ -702,13 +774,18 @@
     </button>
   </div>
 
-  <!-- 結局 -->
-  <div id="resultScreen" class="screen">
-    <h1>調查結果</h1>
-    <div id="resultText"></div>
-    <button onclick="if (!gameOver) showSuspects()">重新選擇</button>
-    <button onclick="location.reload()">重新開始</button>
-  </div>
+ <!-- 投票結果 -->
+<div id="resultScreen" class="screen">
+  <h1>投票結果</h1>
+
+  <p id="resultTotal">正在統計票數……</p>
+
+  <div id="resultCards"></div>
+
+  <div id="resultText"></div>
+
+  <button onclick="location.reload()">重新開始</button>
+</div>
 
 </div>
 
@@ -1095,23 +1172,74 @@ async function showVotingResults() {
       "嫌疑人四"
     ];
 
-    const lines = counts.map((count, index) => {
+    const resultCards = document.getElementById("resultCards");
+    const resultTotal = document.getElementById("resultTotal");
+    const resultText = document.getElementById("resultText");
+
+    resultTotal.textContent = `總投票數：${total} 票`;
+    resultText.textContent = "";
+    resultCards.innerHTML = "";
+
+    counts.forEach((count, index) => {
       const percentage = total === 0
         ? 0
-        : (count / total * 100).toFixed(1);
+        : count / total * 100;
 
-      return `${names[index]}：${count} 票（${percentage}%）`;
+      const card = document.createElement("div");
+      card.className = "result-card";
+
+      card.innerHTML = `
+        <img src="${suspects[index].image}" alt="${names[index]}">
+        <div class="result-name">${names[index]}</div>
+        <div class="result-votes" id="votes-${index}">0 票</div>
+        <div class="result-percent" id="percent-${index}">0.0%</div>
+        <div class="result-bar">
+          <div class="result-bar-fill" id="bar-${index}"></div>
+        </div>
+      `;
+
+      resultCards.appendChild(card);
     });
 
-    document.getElementById("resultText").textContent =
-      `投票結束！共 ${total} 票\n\n` +
-      lines.join("\n") +
-      "\n\n真正的駭客是：羅思穎！";
+    // 數字動畫：從 0 跑到實際結果
+    const duration = 3500;
+    const startTime = performance.now();
 
-    document.getElementById("resultText").style.whiteSpace =
-      "pre-line";
+    function animateResults(now) {
+      const progress = Math.min(
+        (now - startTime) / duration,
+        1
+      );
 
-    // 公布結果 10 秒後，播放成功影片
+      // 先快後慢
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      counts.forEach((count, index) => {
+        const percentage = total === 0
+          ? 0
+          : count / total * 100;
+
+        const currentVotes = Math.round(count * eased);
+        const currentPercent = percentage * eased;
+
+        document.getElementById(`votes-${index}`).textContent =
+          `${currentVotes} 票`;
+
+        document.getElementById(`percent-${index}`).textContent =
+          `${currentPercent.toFixed(1)}%`;
+
+        document.getElementById(`bar-${index}`).style.width =
+          `${currentPercent}%`;
+      });
+
+      if (progress < 1) {
+        requestAnimationFrame(animateResults);
+      }
+    }
+
+    requestAnimationFrame(animateResults);
+
+    // 10 秒後播放原本的成功影片
     setTimeout(() => {
       playStoryVideo("videos/success.mp4", () => {
         hideAllScreens();
@@ -1128,27 +1256,6 @@ async function showVotingResults() {
       "投票已結束，但暫時無法取得統計結果。";
   }
 }
-
-  // 真正的駭客是羅思穎，編號 0
-  const correctSuspect = 0;
-
- const suspects = [
-  {
-   image: "images/JT.png",
-    audio: "music/hacker.mp3"
-  },
-  {
-    image: "images/suspect2.png",
-    audio: "music/viola.mp3"
-  },
-  {
-    image: "images/suspect3.png",
-    audio: "music/vocal.mp3"
-  },
-  {
-    image: "images/suspect4.png",
-    audio: "music/guitar.mp3"
-  }
 ];
 
   // ====================================
