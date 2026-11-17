@@ -298,10 +298,26 @@
       padding: 8px;
     }
 
-    #resultText {
-      font-size: 22px;
-      margin: 20px;
-    }
+  #resultText {
+  font-size: clamp(32px, 5vw, 64px);
+  font-weight: bold;
+  color: #ffe18c;
+  text-align: center;
+  margin: 20px 0;
+  text-shadow: 3px 3px 0 #382a18;
+  animation: resultReveal 0.7s ease-out;
+}
+
+@keyframes resultReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
   
 #flash {
@@ -1239,15 +1255,32 @@ async function showVotingResults() {
 
     requestAnimationFrame(animateResults);
 
-    // 10 秒後播放原本的成功影片
-    setTimeout(() => {
-      playStoryVideo("videos/success.mp4", () => {
-        hideAllScreens();
+   // 數字動畫結束後，公布最高票的嫌疑人
+setTimeout(() => {
+  const maxVotes = Math.max(...counts);
 
-        document.getElementById("resultScreen")
-          .classList.add("active");
-      });
-    }, 10000);
+  if (total === 0) {
+    resultText.textContent = "本次沒有收到投票";
+  } else {
+    const winners = counts
+      .map((votes, index) => votes === maxVotes ? index + 1 : null)
+      .filter(number => number !== null);
+
+    if (winners.length === 1) {
+      resultText.textContent =
+        `最終投票結果：第 ${winners[0]} 號獲得最高票`;
+    } else {
+      resultText.textContent =
+        `最終投票結果：第 ${winners.join("、")} 號並列最高票`;
+    }
+  }
+
+  // 重新觸發放大出現動畫
+  resultText.style.animation = "none";
+  void resultText.offsetWidth;
+  resultText.style.animation = "resultReveal 0.7s ease-out";
+
+}, 4500);
 
   } catch (error) {
     console.error("讀取投票結果失敗：", error);
