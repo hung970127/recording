@@ -889,10 +889,16 @@ function playStoryVideo(filename, nextAction) {
   videoNextAction = nextAction;
 
   storyVideo.src = filename;
-  storyVideo.currentTime = 0;
-  storyVideo.play();
-}
+  storyVideo.load();
 
+  storyVideo.play().catch(error => {
+    console.error("影片播放失敗：", error);
+    document.getElementById("videoTransition")
+      .classList.remove("active");
+
+    alert("影片無法播放：" + error.message);
+  });
+}
 function finishCurrentVideo() {
   storyVideo.pause();
   storyVideo.removeAttribute("src");
