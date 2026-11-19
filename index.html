@@ -842,7 +842,9 @@ function startOpening() {
     storyVideo.addEventListener("playing", onVideoPlaying);
 
     playStoryVideo(
-      "https://github.com/hung970127/recording/releases/download/v1.0/videofinal.mp4",
+     
+"videos/opening.mp4",
+
       () => {
         storyVideo.removeEventListener("playing", onVideoPlaying);
         transition.classList.remove("active");
@@ -1241,15 +1243,17 @@ setTimeout(() => {
     .classList.add("active");
 
   // 播放結局影片
-  function playEndingVideo() {
-   const endingVideo = isWin
-  ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
-  : "https://github.com/hung970127/recording/releases/download/v1.8/end.final1.mp4";
+ 
+function playEndingVideo() {
+  const endingVideo = isWin
+    ? "videos/good-ending.mp4"
+    : "videos/bad-ending.mp4";
 
-    playStoryVideo(endingVideo, () => {
-      showFinalResult();
-    });
-  }
+  playStoryVideo(endingVideo, () => {
+    showFinalResult();
+  });
+}
+
 
   if (isWin) {
 
