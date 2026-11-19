@@ -418,6 +418,7 @@ function renderSuspects() {
   updateButtons();
 }
 
+
 function playMusic(index) {
   if (playingIndex === index && !audioPlayer.paused) {
     audioPlayer.pause();
@@ -428,16 +429,31 @@ function playMusic(index) {
 
   audioPlayer.pause();
   audioPlayer.src = suspects[index].audio;
+  audioPlayer.load();
   playingIndex = index;
 
-  audioPlayer.play().catch(() => {
-    playingIndex = -1;
-    showMessage("音樂播放失敗，請確認音檔是否存在。");
-    updateButtons();
-  });
+  audioPlayer.play()
+    .then(() => {
+      showMessage("");
+      updateButtons();
+    })
+    .catch(error => {
+      console.error("音樂播放失敗：", error);
+      console.error("音檔網址：", audioPlayer.src);
+
+      playingIndex = -1;
+
+      showMessage(
+        "音樂播放失敗：" +
+        error.name + " - " + error.message
+      );
+
+      updateButtons();
+    });
 
   updateButtons();
 }
+
 
 audioPlayer.onended = () => {
   playingIndex = -1;
