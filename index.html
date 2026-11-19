@@ -1112,9 +1112,35 @@ if (winners.length === 1) {
 }
     }
 
-  // 4.5 秒後自動跳到最終投票結果
+// ===== 根據投票結果決定結局 =====
+
+// 徐正庭是第一位嫌疑人，索引為 0
+const isWin =
+  total > 0 &&
+  counts[0] === Math.max(...counts) &&
+  counts.filter(count => count === counts[0]).length === 1;
+
+// 等待票數動畫結束後播放結局
 setTimeout(() => {
-  showFinalResult();
+
+  if (isWin) {
+
+    // 勝利：播放勝利影片
+    playStoryVideo(
+      "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4",
+      () => {
+        showFinalResult();
+      }
+    );
+
+  } else {
+
+    // 失敗：暫時顯示原本結果畫面
+    // 等加入失敗影片後再修改
+    showFinalResult();
+
+  }
+
 }, 4500);
 
 
