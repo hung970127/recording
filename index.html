@@ -494,47 +494,10 @@
 
     /* ===== 駭客身分懸念畫面 ===== */
 
-/* ===== 駭客身分揭曉畫面 ===== */
-
 #hackerRevealScreen {
-  position: absolute;
-  overflow: hidden;
+  background: #05070d;
   z-index: 50;
   gap: 25px;
-
-  background:
-    /* 電腦掃描線 */
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 3px,
-      rgba(255, 40, 40, 0.045) 4px
-    ),
-
-    /* 暗紅色科技網格 */
-    linear-gradient(
-      rgba(255, 35, 35, 0.08) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 35, 35, 0.08) 1px,
-      transparent 1px
-    ),
-
-    /* 中央紅色光暈 */
-    radial-gradient(
-      ellipse at center,
-      #471019 0%,
-      #19080e 45%,
-      #030305 85%
-    );
-
-  background-size:
-    100% 4px,
-    45px 45px,
-    45px 45px,
-    100% 100%;
 }
 
 #hackerRevealScreen .hacker-question {
@@ -745,6 +708,7 @@
 <h1 class="hacker-question" id="hackerQuestion">
   誰是駭客？
 </h1>
+  <p>正在揭曉真正的駭客身分……</p>
 </div>
 
 <!-- 第三頁：最終投票結果 -->
@@ -2020,7 +1984,7 @@ desk(0);
 ctx.restore();
 
 ctx.save();
-ctx.translate(608, 0);
+ctx.translate(575, 0);
 ctx.scale(0.72, 1);
 desk(0);
 ctx.restore();
@@ -2039,9 +2003,7 @@ ctx.restore();
   r(259, 301, 11, 5, "#59636e");
   r(244, 305, 42, 3, "#434b57");
 
-// ===== 右側電腦與桌燈：整組右移 33px =====
-ctx.save();
-ctx.translate(33, 0);
+// ===== 右側駭客電腦 =====
 
 // 電腦外框
 r(613, 251, 92, 50, "#07101b");
@@ -2058,12 +2020,10 @@ if (computerScreenImage.complete && computerScreenImage.naturalWidth > 0) {
 r(653, 301, 11, 5, "#4c5a61");
 r(638, 305, 42, 3, "#3c4853");
 
-// 右側桌燈
-r(720, 279, 6, 28, "#8b8d89");
-r(708, 267, 30, 13, "#c4a36b");
-r(713, 280, 20, 3, "#f2cf91");
-
-ctx.restore();
+  // ===== 右側桌燈 =====
+  r(720, 279, 6, 28, "#8b8d89");
+  r(708, 267, 30, 13, "#c4a36b");
+  r(713, 280, 20, 3, "#f2cf91");
 
  
   // ===== 左右床底木製衣櫃 =====
@@ -2113,7 +2073,7 @@ ctx.restore();
   wardrobe(104);
 
   // 右床下方衣櫃
-wardrobe(787);
+  wardrobe(754);
 
  
   // ===== 加寬床架後的中央平台 =====
