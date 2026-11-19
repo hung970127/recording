@@ -1202,8 +1202,8 @@ setTimeout(() => {
   // 顯示懸念畫面
   hideAllScreens();
 
-  document.getElementById("hackerQuestion").textContent =
-    isWin ? "徐正庭是駭客嗎？" : "誰是駭客嗎？";
+ document.getElementById("hackerQuestion").textContent =
+  `${hackerName}是駭客嗎？`;
 
   document.getElementById("hackerRevealScreen")
     .classList.add("active");
