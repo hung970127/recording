@@ -140,65 +140,148 @@
   to { opacity: 1; }
 }
 
-   /* 提示圖片與 QR Code 左右並排 */
+  
+/* ===== 駭客線索頁面 ===== */
+#clueScreen {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(50, 255, 160, 0.025) 4px
+    ),
+    radial-gradient(ellipse at center, #102c27, #030b0d 80%);
+  color: #d8fff0;
+  padding: 4% 5%;
+  overflow: hidden;
+}
 
-/* 提示圖片與 QR Code 左右並排 */
+#clueScreen > h2 {
+  color: #8bffcb;
+  font-size: clamp(24px, 3.2vw, 42px);
+  letter-spacing: 5px;
+  margin: 0 0 22px;
+  text-shadow: 0 0 20px #23ff9b77;
+}
+
+#clueScreen > h2::before {
+  content: "[ SYSTEM BREACH ]";
+  display: block;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: #48a98c;
+  margin-bottom: 10px;
+}
 
 .clue-layout {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  gap: 35px;
-  width: 95%;
-  max-width: 1000px;
-  margin: 0 auto;
+  gap: 24px;
+  width: 94%;
+  max-width: 1150px;
+  max-height: 72%;
+}
+
+.hint-panel,
+.qr-panel {
+  position: relative;
+  min-width: 0;
+  background: rgba(4, 20, 20, 0.92);
+  border: 1px solid #328d72;
+  box-shadow:
+    0 0 20px #00ff8820,
+    inset 0 0 30px #00ff8810;
+  padding: 20px;
 }
 
 .hint-panel {
   flex: 1.5;
-  min-width: 0;
-}
-
-.qr-panel {
-  flex: 1;
-  min-width: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.hint-panel::before {
+  content: "FILE_001 // ENCRYPTED EVIDENCE";
+  position: absolute;
+  top: 9px;
+  left: 14px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #67c7a6;
 }
 
 .hint-image {
   display: block;
   width: 100%;
-  max-height: 65vh;
+  max-height: 100%;
+  min-height: 0;
   object-fit: contain;
+  margin-top: 10px;
+}
+
+.qr-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.qr-panel::before {
+  content: "SECURE CONNECTION // ACTIVE";
+  color: #62e6ac;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.qr-panel h2 {
+  color: #d6fff0;
+  font-size: clamp(15px, 1.8vw, 24px);
+  margin: 0;
 }
 
 #voteQRCode {
-  width: 180px;
-  height: 180px;
+  width: clamp(120px, 16vw, 200px);
+  height: auto;
+  aspect-ratio: 1;
   background: white;
-  padding: 8px;
-}
-
-#clueScreen > h2 {
-  color: #ffe6a3;
-  font-size: 32px;
-  margin-bottom: 20px;
-}
-
-#voteQRCode {
-  width: 180px;
-  height: 180px;
-  background: white;
-  padding: 8px;
+  padding: 10px;
+  border: 3px solid #50e8a3;
+  box-shadow: 0 0 25px #30ff9b55;
 }
 
 .qr-panel p {
-  font-size: 16px;
-  line-height: 1.5;
+  color: #a6d6c5;
+  font-size: clamp(12px, 1.3vw, 16px);
+  line-height: 1.7;
+  max-width: 300px;
+  margin: 0;
+}
+
+@media (max-width: 650px) {
+  #clueScreen {
+    padding: 45px 12px 12px;
+    overflow-y: auto;
+  }
+
+  .clue-layout {
+    flex-direction: column;
+    max-height: none;
+    gap: 12px;
+  }
+
+  .hint-panel,
+  .qr-panel {
+    padding: 16px;
+  }
+
+  .hint-image {
+    max-height: 32vh;
+  }
 }
 
     /* 五分鐘倒數計時器 */
@@ -549,26 +632,25 @@
 </div>
 
 
-<!-- ===== 提示圖片與 QR Code 畫面 ===== -->
 
+<!-- ===== 駭客線索與 QR Code ===== -->
 <div id="clueScreen" class="screen">
 
   <h2>發現神祕線索</h2>
 
   <div class="clue-layout">
 
-    <!-- 左邊：提示圖片 -->
+    <!-- 左側：解密線索 -->
     <div class="hint-panel">
-
-     <img
-  src="images/key.jpg"
-  alt="提示"
-  class="hint-image"
-  onerror="console.error('提示圖片載入失敗：', this.src)"
->
+      <img
+        src="images/key.jpg"
+        alt="提示"
+        class="hint-image"
+        onerror="console.error('提示圖片載入失敗：', this.src)"
+      >
     </div>
 
-    <!-- 右邊：QR Code -->
+    <!-- 右側：投票 QR Code -->
     <div class="qr-panel">
 
       <h2>掃描 QR Code 開始調查</h2>
@@ -579,7 +661,8 @@
       >
 
       <p>
-        請使用手機聆聽四位嫌疑犯的訊號並投票
+        請使用手機聆聽四位嫌疑犯的訊號，
+        分析線索並投下你的選擇。
       </p>
 
     </div>
