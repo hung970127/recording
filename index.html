@@ -390,7 +390,38 @@
   background: #92d8ff;
   border-radius: 8px;
 }
-    
+
+    /* ===== 駭客身分懸念畫面 ===== */
+
+#hackerRevealScreen {
+  background: #05070d;
+  z-index: 50;
+  gap: 25px;
+}
+
+#hackerRevealScreen .hacker-question {
+  color: #ff4545;
+  font-size: clamp(30px, 5.5vw, 75px);
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+  animation: hackerPulse 1.2s infinite alternate;
+}
+
+#hackerRevealScreen p {
+  color: #a6b8cc;
+  font-size: clamp(14px, 2vw, 24px);
+}
+
+@keyframes hackerPulse {
+  from {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
   </style>
 </head>
 
@@ -559,7 +590,13 @@
 
 </div>
 
-<!-- 第二頁：最終投票結果 -->
+<!-- 第二頁：駭客身分揭曉前的懸念畫面 -->
+<div id="hackerRevealScreen" class="screen">
+  <h1 class="hacker-question">駭客是徐正庭嗎？</h1>
+  <p>正在揭曉真正的駭客身分……</p>
+</div>
+
+<!-- 第三頁：最終投票結果 -->
 <div id="finalResultScreen" class="screen">
   <h1>最終投票結果</h1>
   <div id="resultText"></div>
@@ -1121,25 +1158,72 @@ const isWin =
   counts.filter(count => count === counts[0]).length === 1;
 
 // 等待票數動畫結束後播放結局
+// ===== 根據投票結果決定結局 =====
+
+// 徐正庭是第一位嫌疑人
+const isWin =
+  total > 0 &&
+  counts[0] === Math.max(...counts) &&
+  counts.filter(count => count === counts[0]).length === 1;
+
+// 等待投票結果動畫結束
 setTimeout(() => {
 
-  if (isWin) {
+  // 停止票數音效
+  voteSound.pause();
+  voteSound.currentTime = 0;
 
-    // 勝利：播放勝利影片
-    playStoryVideo(
-      "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4",
-      () => {
-        showFinalResult();
-      }
-    );
+  // 切換到懸念畫面
+  hideAllScreens();
 
-  } else {
+  document.getElementById("hackerRevealScreen")
+    .classList.add("active");
 
-    // 失敗：暫時顯示原本結果畫面
-    // 等加入失敗影片後再修改
-    showFinalResult();
+  // 播放跳舞.mp3
+  const revealMusic = new Audio("music/跳舞.mp3");
+  revealMusic.volume = 1;
 
+  // 防止音樂結束事件重複執行
+  let endingStarted = false;
+
+  function continueToEnding() {
+    if (endingStarted) return;
+    endingStarted = true;
+
+    revealMusic.pause();
+
+    if (isWin) {
+
+      // 勝利影片
+      playStoryVideo(
+        "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4",
+        () => {
+          showFinalResult();
+        }
+      );
+
+    } else {
+
+      // 失敗影片尚未設定
+      showFinalResult();
+
+    }
   }
+
+  // 音樂播放完畢後進入結局
+  revealMusic.addEventListener(
+    "ended",
+    continueToEnding,
+    { once: true }
+  );
+
+  // 播放音樂
+  revealMusic.play().catch(error => {
+    console.error("跳舞.mp3 播放失敗：", error);
+
+    // 無法播放時，仍繼續進入結局
+    continueToEnding();
+  });
 
 }, 4500);
 
