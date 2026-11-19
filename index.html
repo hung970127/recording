@@ -1113,14 +1113,12 @@ async function revealResultsEarly() {
     return;
   }
 
- if (!endVoteConfirmed) {
-  document.getElementById("endVoteConfirm").classList.add("active");
-  return;
-}
+  if (!endVoteConfirmed) {
+    document.getElementById("endVoteConfirm").classList.add("active");
+    return;
+  }
 
-endVoteConfirmed = false;
-
-  if (!confirmed) return;
+  endVoteConfirmed = false;
 
   const button = document.getElementById("revealResultsButton");
   button.disabled = true;
