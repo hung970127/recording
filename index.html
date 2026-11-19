@@ -888,7 +888,12 @@ document.addEventListener("keydown", (event) => {
   finishCurrentVideo();
 });
 
-storyVideo.addEventListener("ended", finishCurrentVideo);
+storyVideo.addEventListener("ended", () => {
+  // 結局影片播放完後，保留最後畫面
+  if (videoNextAction === null) return;
+
+  finishCurrentVideo();
+});
 
 
 function startOpening() {
@@ -1344,20 +1349,26 @@ setTimeout(() => {
     .classList.add("active");
 
   // 播放結局影片
-  function playEndingVideo() {
-   const endingVideo = isWin
-  ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
-  : "https://github.com/hung970127/recording/releases/download/v1.9/end.final2.mp4";
+ function playEndingVideo() {
+  const endingVideo = isWin
+    ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
+    : "https://github.com/hung970127/recording/releases/download/v1.9/end.final2.mp4";
 
-  playStoryVideo(endingVideo, () => {
-  if (isWin) {
-    showFinalResult();
-  } else {
-    hideAllScreens();
-    document.getElementById("videoScreen").classList.add("active");
-  }
-});
-  }
+  // 播放結局影片
+  playStoryVideo(endingVideo, null);
+
+  // 影片播放完畢後，停留在最後一幀
+  storyVideo.addEventListener("ended", function stayOnLastFrame() {
+    storyVideo.removeEventListener("ended", stayOnLastFrame);
+
+    storyVideo.currentTime = Math.max(
+      0,
+      storyVideo.duration - 0.05
+    );
+
+    storyVideo.pause();
+  }, { once: true });
+}
 
 if (isWin) {
 
