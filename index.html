@@ -797,12 +797,14 @@ window.loginAdmin = loginAdmin;
 async function toggleFullscreen() {
   const game = document.getElementById("game");
 
-  if (!document.fullscreenElement) {
-    try {
+  try {
+    if (!document.fullscreenElement) {
       await game.requestFullscreen();
-    } catch (error) {
-      console.error("無法進入全螢幕：", error);
+    } else {
+      await document.exitFullscreen();
     }
+  } catch (error) {
+    console.error("切換全螢幕失敗：", error);
   }
 }
 
