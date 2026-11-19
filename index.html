@@ -1192,6 +1192,7 @@ if (total === 0) {
     .join("、");
 }
 
+
 // 等待票數動畫結束
 setTimeout(() => {
 
@@ -1201,56 +1202,57 @@ setTimeout(() => {
   // 顯示懸念畫面
   hideAllScreens();
 
-  document.getElementById("hackerQuestion")
-    .textContent = `${hackerName}是駭客嗎？`;
+  document.getElementById("hackerQuestion").textContent =
+    isWin ? "徐正庭是駭客嗎？" : "誰是駭客嗎？";
 
   document.getElementById("hackerRevealScreen")
     .classList.add("active");
 
-  // 準備跳舞音樂
-  const revealMusic = new Audio("music/跳舞.mp3");
-  revealMusic.volume = 1;
-  revealMusic.preload = "auto";
-
-  let endingStarted = false;
-
-  function continueToEnding() {
-    if (endingStarted) return;
-    endingStarted = true;
-
-    revealMusic.pause();
-
-    // 根據投票結果選擇影片
+  // 播放結局影片
+  function playEndingVideo() {
     const endingVideo = isWin
       ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
-      : "https://github.com/hung970127/recording/releases/download/v1.3/default.mp4";
+      : "https://github.com/hung970127/recording/releases/download/v1.4/default.mp4";
 
-    playStoryVideo(
-      endingVideo,
-      () => {
-        showFinalResult();
-      }
-    );
+    playStoryVideo(endingVideo, () => {
+      showFinalResult();
+    });
   }
 
-  // 音樂播完後播放結局影片
-  revealMusic.addEventListener(
-    "ended",
-    continueToEnding,
-    { once: true }
-  );
+  if (isWin) {
 
-  // 懸念畫面停留 20 秒
-  setTimeout(() => {
+    // ===== 成功結局 =====
+    // 等待 20 秒後播放跳舞音樂
+    setTimeout(() => {
 
-    revealMusic.play().catch(error => {
-      console.error("跳舞.mp3 播放失敗：", error);
-      continueToEnding();
-    });
+      const revealMusic = new Audio("music/跳舞.mp3");
+      revealMusic.volume = 1;
 
-  }, 20000);
+      revealMusic.addEventListener(
+        "ended",
+        playEndingVideo,
+        { once: true }
+      );
+
+      revealMusic.play().catch(error => {
+        console.error("跳舞音樂播放失敗：", error);
+        playEndingVideo();
+      });
+
+    }, 20000);
+
+  } else {
+
+    // ===== 失敗結局 =====
+    // 等待 10 秒，不播放跳舞音樂
+    setTimeout(() => {
+      playEndingVideo();
+    }, 10000);
+
+  }
 
 }, 4500);
+
 
   } catch (error) {
     console.error("讀取投票結果失敗：", error);
