@@ -1151,15 +1151,6 @@ if (winners.length === 1) {
 
 // ===== 根據投票結果決定結局 =====
 
-// 徐正庭是第一位嫌疑人，索引為 0
-const isWin =
-  total > 0 &&
-  counts[0] === Math.max(...counts) &&
-  counts.filter(count => count === counts[0]).length === 1;
-
-// 等待票數動畫結束後播放結局
-// ===== 根據投票結果決定結局 =====
-
 // 徐正庭是第一位嫌疑人
 const isWin =
   total > 0 &&
