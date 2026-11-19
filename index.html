@@ -1244,9 +1244,15 @@ setTimeout(() => {
   ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
   : "https://github.com/hung970127/recording/releases/download/v1.9/end.final2.mp4";
 
-    playStoryVideo(endingVideo, () => {
-      showFinalResult();
-    });
+  playStoryVideo(endingVideo, () => {
+  if (isWin) {
+    showFinalResult();
+  } else {
+    hideAllScreens();
+    document.getElementById("videoScreen").classList.add("active");
+    document.getElementById("fullscreenButton").style.display = "none";
+  }
+});
   }
 
   if (isWin) {
