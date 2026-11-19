@@ -1346,6 +1346,24 @@ async function showVotingResults() {
   }
 }
 
+  function showFinalResult() {
+  hideAllScreens();
+
+  const finalScreen =
+    document.getElementById("finalResultScreen");
+
+  finalScreen.classList.add("active");
+
+  const resultText =
+    document.getElementById("resultText");
+
+  resultText.style.animation = "none";
+  void resultText.offsetWidth;
+  resultText.style.animation = "resultReveal 0.7s ease-out";
+}
+
+window.showFinalResult = showFinalResult;
+
   // ====================================
   // 畫圖工具
   // ====================================
