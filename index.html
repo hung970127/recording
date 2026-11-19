@@ -758,7 +758,9 @@ function fadeAudio(audio, from, to, duration = 2000, onComplete = null) {
   fadeTimers.set(audio, timer);
 }
   
-const puzzleMusic = new Audio("music/puzzle.wav");
+const puzzleMusic = new Audio(
+  "https://github.com/hung970127/recording/releases/download/v1.1/puzzle.wav"
+);
 puzzleMusic.preload = "auto";
 puzzleMusic.loop = true;
 puzzleMusic.volume = 0.3;
@@ -1113,10 +1115,6 @@ window.showFinalResult = showFinalResult;
   // ====================================
   // 繪製 2D 宿舍
   // ====================================
-
- 
-
-
 
 function drawRoom() {
 
