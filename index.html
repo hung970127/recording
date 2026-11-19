@@ -800,12 +800,15 @@ window.loginAdmin = loginAdmin;
 
 async function toggleFullscreen() {
   const game = document.getElementById("game");
+  const button = document.getElementById("fullscreenButton");
 
   try {
     if (!document.fullscreenElement) {
       await game.requestFullscreen();
+      button.style.setProperty("display", "none", "important");
     } else {
       await document.exitFullscreen();
+      button.style.removeProperty("display");
     }
   } catch (error) {
     console.error("切換全螢幕失敗：", error);
@@ -818,9 +821,9 @@ document.addEventListener("fullscreenchange", () => {
   const button = document.getElementById("fullscreenButton");
 
   if (document.fullscreenElement) {
-    button.style.display = "none";
+    button.style.setProperty("display", "none", "important");
   } else {
-    button.style.display = "block";
+    button.style.removeProperty("display");
   }
 });
   
