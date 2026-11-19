@@ -1311,19 +1311,19 @@ async function showVotingResults() {
     if (total === 0) {
       resultText.textContent = "本次沒有收到投票";
     } else {
-      const winners = counts
-        .map((votes, index) =>
-          votes === maxVotes ? index + 1 : null
-        )
-        .filter(number => number !== null);
+const winners = counts
+  .map((votes, index) =>
+    votes === maxVotes ? names[index] : null
+  )
+  .filter(name => name !== null);
 
-      if (winners.length === 1) {
-        resultText.textContent =
-          `嫌疑犯 ${winners[0]} 號獲得最高票！`;
-      } else {
-        resultText.textContent =
-          `嫌疑犯 ${winners.join("、")} 號並列最高票！`;
-      }
+if (winners.length === 1) {
+  resultText.textContent =
+    `${winners[0]} 獲得最高票！`;
+} else {
+  resultText.textContent =
+    `${winners.join("、")} 並列最高票！`;
+}
     }
 
   // 4.5 秒後自動跳到最終投票結果
