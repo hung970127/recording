@@ -355,21 +355,53 @@ let serverOffset = 0;
 let unsubscribeConfig = null;
 let unsubscribeVote = null;
 
-// 四首 WAV 各自建立音訊播放器
+// 四首 WAV 各自建立播放器
 const audioPlayers = suspects.map(suspect => {
-  const audio = new Audio(suspect.audio);
+  const audio = new Audio();
   audio.preload = "auto";
-
-  audio.addEventListener("error", () => {
-    console.error("音樂載入失敗：", suspect.audio);
-  });
 
   return audio;
 });
 
-// 預先載入四首 WAV
+// 記錄已下載完成的音樂
+const audioBlobURLs = new Array(suspects.length).fill(null);
+
+// 主動下載完整 WAV
+async function preloadOneMusic(index) {
+  if (audioBlobURLs[index]) return;
+
+  try {
+    const response = await fetch(suspects[index].audio);
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const blob = await response.blob();
+
+    const blobURL = URL.createObjectURL(blob);
+    audioBlobURLs[index] = blobURL;
+
+    // 如果這首還沒開始播放，就改用完整下載的檔案
+    const audio = audioPlayers[index];
+
+    if (audio.paused && audio.currentTime === 0) {
+      audio.src = blobURL;
+      audio.load();
+    }
+
+    console.log("WAV 預載完成：", suspects[index].name);
+
+  } catch (error) {
+    console.error("WAV 預載失敗：", error);
+  }
+}
+
+// 四首同時開始下載
 function preloadMusic() {
-  audioPlayers.forEach(audio => audio.load());
+  suspects.forEach((_, index) => {
+    preloadOneMusic(index);
+  });
 }
 
 let audioPlayer = audioPlayers[0];
@@ -450,19 +482,37 @@ function playMusic(index) {
   audioPlayer.pause();
   audioPlayer.currentTime = 0;
 
-  // 切換到已建立的 WAV 播放器
+  // 切換播放器
   audioPlayer = audioPlayers[index];
+
+  // 優先使用完整下載的 WAV
+  if (audioBlobURLs[index]) {
+    if (audioPlayer.src !== audioBlobURLs[index]) {
+      audioPlayer.src = audioBlobURLs[index];
+      audioPlayer.load();
+    }
+  } else if (!audioPlayer.src) {
+    // 還沒下載完成時，直接使用原始網址播放
+    audioPlayer.src = suspects[index].audio;
+    audioPlayer.load();
+  }
+
   audioPlayer.currentTime = 0;
   playingIndex = index;
 
-  audioPlayer.play()
+  const selectedAudio = audioPlayer;
+
+  selectedAudio.play()
     .then(() => {
+      if (audioPlayer !== selectedAudio) return;
+
       showMessage("");
       updateButtons();
     })
     .catch(error => {
+      if (audioPlayer !== selectedAudio) return;
+
       console.error("音樂播放失敗：", error);
-      console.error("音檔網址：", audioPlayer.src);
 
       playingIndex = -1;
 
@@ -477,10 +527,15 @@ function playMusic(index) {
   updateButtons();
 }
 
-audioPlayer.onended = () => {
-  playingIndex = -1;
-  updateButtons();
-};
+// 四首音樂播放完畢後都會更新按鈕
+audioPlayers.forEach((audio, index) => {
+  audio.addEventListener("ended", () => {
+    if (playingIndex === index) {
+      playingIndex = -1;
+      updateButtons();
+    }
+  });
+});
 
 function selectSuspect(index) {
   if (!votingOpen()) return;
