@@ -777,6 +777,16 @@ storyVideo.addEventListener("ended", finishCurrentVideo);
 
 
 function startOpening() {
+
+  // 按下 Start 時，自動進入全螢幕
+  const game = document.getElementById("game");
+
+  if (!document.fullscreenElement) {
+    game.requestFullscreen().catch(error => {
+      console.error("無法進入全螢幕：", error);
+    });
+  }
+
   const transition = document.getElementById("videoTransition");
 
   if (transition.classList.contains("active")) return;
