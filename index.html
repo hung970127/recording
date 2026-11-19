@@ -603,11 +603,6 @@
 </div>
   
   <canvas id="canvas" width="960" height="540"></canvas>
-
-<div id="dialogue">
-  <div id="dialogueText"></div>
-  <button id="dialogueNext" type="button">繼續 ▶</button>
-</div>
   
 <div id="flash"></div>
   <div id="videoTransition"></div>
@@ -690,25 +685,6 @@
     </div>
 
   </div>
-
-  <!-- 原本的對話框，保留遊戲功能 -->
-  <div id="clueDialogue" style="
-    display:none;
-    position:absolute;
-    bottom:0;
-    left:0;
-    width:100%;
-    height:33.33%;
-    padding:25px 40px 65px;
-    background:rgba(9,15,30,0.95);
-    border:4px solid #9abbd1;
-    color:white;
-    font-size:clamp(20px,2.8vw,36px);
-    line-height:1.6;
-    text-align:left;
-    overflow-y:auto;
-    z-index:40;
-  "></div>
 
 </div>
 
@@ -923,8 +899,6 @@ function startOpening() {
   const ctx = canvas.getContext("2d");
 
   ctx.imageSmoothingEnabled = false;
-
-  const dialogue = document.getElementById("dialogue");
 
   let gameStarted = false;
   let animationTime = 0;
@@ -2102,44 +2076,6 @@ ctx.restore();
     r(47, 40, 5, 30, "#303d49");
   }
   
-  // ====================================
-  // 對話
-  // ====================================
-
-  const dialogueText = document.getElementById("dialogueText");
-const dialogueNext = document.getElementById("dialogueNext");
-
-let dialogueIndex = 0;
-
-const dialogueLines = [
-  "主角：奇怪……這裡好像有什麼東西。",
-  "主角：等等！線索好像就在這裡！",
-  "主角：如果能看懂這些東西，說不定就能找到駭客留下的痕跡。"
-];
-
-function showDialogue(message) {
-  dialogue.style.display = "block";
-  document.getElementById("dialogueText").textContent = message;
-}
-
-function hideDialogue() {
-  dialogue.style.display = "none";
-}
-
-dialogueNext.addEventListener("click", () => {
-  if (gameOver || clueShown) return;
-
-  dialogueIndex++;
-
-  if (dialogueIndex < dialogueLines.length) {
-    showDialogue(dialogueLines[dialogueIndex]);
-  } else {
-    clueShown = true;
-    hideDialogue();
-    showClues();
-  }
-});
-
   // ====================================
   // 開始遊戲
   // ====================================
