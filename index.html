@@ -792,34 +792,21 @@ async function loginAdmin() {
 
 window.loginAdmin = loginAdmin;
 
-  // ===== 全螢幕切換 =====
+  // ===== 進入全螢幕，按 Esc 退出 =====
 
 async function toggleFullscreen() {
   const game = document.getElementById("game");
 
-  try {
-    if (!document.fullscreenElement) {
+  if (!document.fullscreenElement) {
+    try {
       await game.requestFullscreen();
-    } else {
-      await document.exitFullscreen();
+    } catch (error) {
+      console.error("無法進入全螢幕：", error);
     }
-  } catch (error) {
-    console.error("無法切換全螢幕：", error);
   }
 }
 
 window.toggleFullscreen = toggleFullscreen;
-
-// 更新按鈕文字
-document.addEventListener("fullscreenchange", () => {
-  const button = document.getElementById("fullscreenButton");
-
-  if (document.fullscreenElement) {
-    button.textContent = "⛶ 退出全螢幕";
-  } else {
-    button.textContent = "⛶ 全螢幕";
-  }
-});
   
   const voteURL = new URL("vote.html", window.location.href).href;
 
@@ -843,9 +830,6 @@ function playStoryVideo(filename, nextAction) {
 
   videoNextAction = nextAction;
 
-  // 播放影片時隱藏全螢幕按鈕
-  document.getElementById("fullscreenButton").style.display = "none";
-
   storyVideo.src = filename;
   storyVideo.load();
 
@@ -864,9 +848,6 @@ function finishCurrentVideo() {
   storyVideo.pause();
   storyVideo.removeAttribute("src");
   storyVideo.load();
-
-  // 影片結束後恢復全螢幕按鈕
-  document.getElementById("fullscreenButton").style.display = "block";
 
   const next = videoNextAction;
   videoNextAction = null;
@@ -1347,7 +1328,6 @@ setTimeout(() => {
   } else {
     hideAllScreens();
     document.getElementById("videoScreen").classList.add("active");
-    document.getElementById("fullscreenButton").style.display = "none";
   }
 });
   }
