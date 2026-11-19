@@ -814,9 +814,11 @@ import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
-
+  
 import {
   getDatabase,
   ref,
@@ -835,6 +837,39 @@ const firebaseAuth = getAuth(firebaseApp);
 const firebaseDB = getDatabase(firebaseApp);
 
 
+const firebaseApp = initializeApp(firebaseConfig);
+const firebaseAuth = getAuth(firebaseApp);
+const firebaseDB = getDatabase(firebaseApp);
+
+// 讓 Firebase 記住登入狀態
+const authReady = setPersistence(
+  firebaseAuth,
+  browserLocalPersistence
+);
+
+// 自動檢查主持人是否已經登入
+onAuthStateChanged(firebaseAuth, async (user) => {
+  await authReady;
+
+  const loginScreen = document.getElementById("adminLogin");
+  const startScreen = document.getElementById("start");
+  const message = document.getElementById("adminLoginMessage");
+
+  if (user && user.uid === ADMIN_UID) {
+    loginScreen.classList.remove("active");
+    startScreen.classList.add("active");
+  } else {
+    startScreen.classList.remove("active");
+    loginScreen.classList.add("active");
+
+    if (user && user.uid !== ADMIN_UID) {
+      await signOut(firebaseAuth);
+      message.textContent = "這個帳號不是主持人帳號";
+    }
+  }
+});
+
+// 手動登入（第一次登入時使用）
 async function loginAdmin() {
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("adminPassword").value;
@@ -843,6 +878,8 @@ async function loginAdmin() {
   message.textContent = "登入中……";
 
   try {
+    await authReady;
+
     const credential = await signInWithEmailAndPassword(
       firebaseAuth,
       email,
@@ -850,7 +887,7 @@ async function loginAdmin() {
     );
 
     if (credential.user.uid !== ADMIN_UID) {
-    await signOut(firebaseAuth);
+      await signOut(firebaseAuth);
       message.textContent = "這個帳號不是主持人帳號";
       return;
     }
