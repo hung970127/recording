@@ -572,17 +572,6 @@
     "
   ></video>
 
-  <button
-    onclick="skipCurrentVideo()"
-    style="
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      z-index: 10;
-    "
-  >
-    跳過影片
-  </button>
 </div>
 
   <canvas id="canvas" width="960" height="540"></canvas>
@@ -886,9 +875,18 @@ function finishCurrentVideo() {
 }
 
 
-function skipCurrentVideo() {
+// 播放影片時，按空白鍵跳過影片
+document.addEventListener("keydown", (event) => {
+  if (event.code !== "Space" || event.repeat) return;
+
+  const videoScreen = document.getElementById("videoScreen");
+
+  // 只有影片畫面正在顯示時才能跳過
+  if (!videoScreen.classList.contains("active")) return;
+
+  event.preventDefault();
   finishCurrentVideo();
-}
+});
 
 storyVideo.addEventListener("ended", finishCurrentVideo);
 
