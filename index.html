@@ -494,10 +494,47 @@
 
     /* ===== 駭客身分懸念畫面 ===== */
 
+/* ===== 駭客身分揭曉畫面 ===== */
+
 #hackerRevealScreen {
-  background: #05070d;
+  position: absolute;
+  overflow: hidden;
   z-index: 50;
   gap: 25px;
+
+  background:
+    /* 電腦掃描線 */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(255, 40, 40, 0.045) 4px
+    ),
+
+    /* 暗紅色科技網格 */
+    linear-gradient(
+      rgba(255, 35, 35, 0.08) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 35, 35, 0.08) 1px,
+      transparent 1px
+    ),
+
+    /* 中央紅色光暈 */
+    radial-gradient(
+      ellipse at center,
+      #471019 0%,
+      #19080e 45%,
+      #030305 85%
+    );
+
+  background-size:
+    100% 4px,
+    45px 45px,
+    45px 45px,
+    100% 100%;
 }
 
 #hackerRevealScreen .hacker-question {
@@ -708,7 +745,6 @@
 <h1 class="hacker-question" id="hackerQuestion">
   誰是駭客？
 </h1>
-  <p>正在揭曉真正的駭客身分……</p>
 </div>
 
 <!-- 第三頁：最終投票結果 -->
