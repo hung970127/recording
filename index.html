@@ -1170,9 +1170,10 @@ setTimeout(() => {
   document.getElementById("hackerRevealScreen")
     .classList.add("active");
 
-  // 播放跳舞.mp3
-  const revealMusic = new Audio("music/跳舞.mp3");
-  revealMusic.volume = 1;
+ // 準備跳舞.mp3
+const revealMusic = new Audio("music/跳舞.mp3");
+revealMusic.volume = 1;
+revealMusic.preload = "auto";
 
   // 防止音樂結束事件重複執行
   let endingStarted = false;
@@ -1208,13 +1209,16 @@ setTimeout(() => {
     { once: true }
   );
 
-  // 播放音樂
+ // 懸念畫面先停留 20 秒
+setTimeout(() => {
+
+  // 20 秒後開始播放跳舞.mp3
   revealMusic.play().catch(error => {
     console.error("跳舞.mp3 播放失敗：", error);
-
-    // 無法播放時，仍繼續進入結局
     continueToEnding();
   });
+
+}, 20000);
 
 }, 4500);
 
