@@ -1312,10 +1312,10 @@ const winners = counts
 
 if (winners.length === 1) {
   resultText.textContent =
-    `${winners[0]} 獲得最高票！`;
+    `${winners[0]} 獲得最高票`;
 } else {
   resultText.textContent =
-    `${winners.join("、")} 並列最高票！`;
+    `${winners.join("、")} 並列最高票`;
 }
     }
 
@@ -1349,19 +1349,6 @@ function showFinalResult() {
   void resultText.offsetWidth;
   resultText.style.animation = "resultReveal 0.7s ease-out";
 
-  // 顯示最高票姓名 5 秒後，回到宿舍背景
-  setTimeout(() => {
-    hideAllScreens();
-
-    // 關閉對話框與其他覆蓋畫面
-    document.getElementById("dialogue").style.display = "none";
-    document.getElementById("videoTransition")
-      .classList.remove("active");
-
-    // 保留宿舍背景，不重新開始遊戲
-    gameStarted = false;
-    gameOver = true;
-  }, 5000);
 }
 
 window.showFinalResult = showFinalResult;
