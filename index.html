@@ -790,7 +790,8 @@
     </button>
   </div>
 
- <!-- 投票結果 -->
+
+<!-- 第一頁：公布票數 -->
 <div id="resultScreen" class="screen">
   <h1>投票結果</h1>
 
@@ -798,9 +799,24 @@
 
   <div id="resultCards"></div>
 
+  <button
+    id="nextResultButton"
+    onclick="showFinalResult()"
+    style="display:none;"
+  >
+    下一頁 ▶
+  </button>
+</div>
+
+<!-- 第二頁：最終投票結果 -->
+<div id="finalResultScreen" class="screen">
+  <h1>最終投票結果</h1>
+
   <div id="resultText"></div>
 
-  <button onclick="location.reload()">重新開始</button>
+  <button onclick="location.reload()">
+    重新開始
+  </button>
 </div>
 
 </div>
@@ -1293,32 +1309,34 @@ async function showVotingResults() {
 
     requestAnimationFrame(animateResults);
 
-   // 數字動畫結束後，公布最高票的嫌疑人
-setTimeout(() => {
-  const maxVotes = Math.max(...counts);
+ 
+    // 計算最終投票結果，但先不公布
+    const maxVotes = Math.max(...counts);
 
-  if (total === 0) {
-    resultText.textContent = "本次沒有收到投票";
-  } else {
-    const winners = counts
-      .map((votes, index) => votes === maxVotes ? index + 1 : null)
-      .filter(number => number !== null);
-
-    if (winners.length === 1) {
-      resultText.textContent =
-        `最終投票結果：第 ${winners[0]} 號獲得最高票`;
+    if (total === 0) {
+      resultText.textContent = "本次沒有收到投票";
     } else {
-      resultText.textContent =
-        `最終投票結果：第 ${winners.join("、")} 號並列最高票`;
+      const winners = counts
+        .map((votes, index) =>
+          votes === maxVotes ? index + 1 : null
+        )
+        .filter(number => number !== null);
+
+      if (winners.length === 1) {
+        resultText.textContent =
+          `嫌疑犯 ${winners[0]} 號獲得最高票！`;
+      } else {
+        resultText.textContent =
+          `嫌疑犯 ${winners.join("、")} 號並列最高票！`;
+      }
     }
-  }
 
-  // 重新觸發放大出現動畫
-  resultText.style.animation = "none";
-  void resultText.offsetWidth;
-  resultText.style.animation = "resultReveal 0.7s ease-out";
+    // 等票數動畫播放完畢，才顯示下一頁按鈕
+    setTimeout(() => {
+      document.getElementById("nextResultButton")
+        .style.display = "block";
+    }, 4500);
 
-}, 4500);
 
   } catch (error) {
     console.error("讀取投票結果失敗：", error);
