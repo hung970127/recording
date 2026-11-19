@@ -800,12 +800,7 @@
   <div id="resultCards"></div>
 
   <button
-    id="nextResultButton"
-    onclick="showFinalResult()"
-    style="display:none;"
-  >
-    下一頁 ▶
-  </button>
+
 </div>
 
 <!-- 第二頁：最終投票結果 -->
@@ -1331,11 +1326,10 @@ async function showVotingResults() {
       }
     }
 
-    // 等票數動畫播放完畢，才顯示下一頁按鈕
-    setTimeout(() => {
-      document.getElementById("nextResultButton")
-        .style.display = "block";
-    }, 4500);
+  // 4.5 秒後自動跳到最終投票結果
+setTimeout(() => {
+  showFinalResult();
+}, 4500);
 
 
   } catch (error) {
