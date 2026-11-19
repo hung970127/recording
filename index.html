@@ -2156,13 +2156,6 @@ function startGame() {
 
   preloadSuspectMusic();
 
-  puzzleMusic.currentTime = 0;
-  puzzleMusic.volume = 0.3;
-
-  puzzleMusic.play().catch(err => {
-    console.log("解謎音樂播放失敗：", err);
-  });
-
   gameStarted = false;
   animationTime = 0;
   clueShown = false;
@@ -2246,11 +2239,22 @@ async function showClues() {
     // 更新目前投票場次
     await set(ref(firebaseDB, "currentSession"), sessionId);
 
+   
     // 顯示線索圖片與 QR Code
     hideAllScreens();
 
     document.getElementById("clueScreen")
       .classList.add("active");
+
+    // 提示出現後，開始播放解謎背景音樂
+    puzzleMusic.currentTime = 0;
+    puzzleMusic.volume = 0.3;
+    puzzleMusic.loop = true;
+
+    puzzleMusic.play().catch(error => {
+      console.error("背景音樂播放失敗：", error);
+    });
+
 
     // 直接開始五分鐘倒數
     startTimer();
