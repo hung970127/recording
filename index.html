@@ -893,6 +893,10 @@ storyVideo.addEventListener("ended", finishCurrentVideo);
 
 function startOpening() {
 
+  // 播放 Start 按鈕音效
+  startButtonSound.currentTime = 0;
+  startButtonSound.play().catch(console.error);
+
   // 按下 Start 時，自動進入全螢幕
   const game = document.getElementById("game");
 
@@ -984,6 +988,10 @@ puzzleMusic.loop = true;
 puzzleMusic.volume = 0.3;
 const voteSound = new Audio("music/票數.mp3");
 voteSound.volume = 0.8;
+  // Start 按鈕音效
+const startButtonSound = new Audio("music/按鈕.mp3");
+startButtonSound.preload = "auto";
+startButtonSound.volume = 1;
   
  // ===== 五分鐘倒數計時 =====
 
