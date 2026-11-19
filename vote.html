@@ -355,9 +355,26 @@ let serverOffset = 0;
 let unsubscribeConfig = null;
 let unsubscribeVote = null;
 
-const audioPlayer = new Audio();
-let playingIndex = -1;
+// 四首 WAV 各自建立音訊播放器
+const audioPlayers = suspects.map(suspect => {
+  const audio = new Audio(suspect.audio);
+  audio.preload = "auto";
 
+  audio.addEventListener("error", () => {
+    console.error("音樂載入失敗：", suspect.audio);
+  });
+
+  return audio;
+});
+
+// 預先載入四首 WAV
+function preloadMusic() {
+  audioPlayers.forEach(audio => audio.load());
+}
+
+let audioPlayer = audioPlayers[0];
+let playingIndex = -1;
+  
 function showMessage(text) {
   $("message").textContent = text;
 }
@@ -420,6 +437,8 @@ function renderSuspects() {
 
 
 function playMusic(index) {
+
+  // 同一首正在播放：按下後暫停
   if (playingIndex === index && !audioPlayer.paused) {
     audioPlayer.pause();
     playingIndex = -1;
@@ -427,9 +446,13 @@ function playMusic(index) {
     return;
   }
 
+  // 停止上一首
   audioPlayer.pause();
-  audioPlayer.src = suspects[index].audio;
-  audioPlayer.load();
+  audioPlayer.currentTime = 0;
+
+  // 切換到已建立的 WAV 播放器
+  audioPlayer = audioPlayers[index];
+  audioPlayer.currentTime = 0;
   playingIndex = index;
 
   audioPlayer.play()
@@ -453,7 +476,6 @@ function playMusic(index) {
 
   updateButtons();
 }
-
 
 audioPlayer.onended = () => {
   playingIndex = -1;
@@ -692,6 +714,9 @@ $("submitBtn").onclick = async () => {
 };
 
 renderSuspects();
+
+// 玩家開啟投票頁面後預先載入四首 WAV
+preloadMusic();
 
 onValue(
   ref(db, ".info/serverTimeOffset"),
