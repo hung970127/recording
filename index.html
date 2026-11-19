@@ -2330,20 +2330,41 @@ async function showClues() {
     await set(ref(firebaseDB, "currentSession"), sessionId);
 
    
-    // 顯示線索圖片與 QR Code
-    hideAllScreens();
+       // ===== 白光過場進入提示頁面 =====
+    const transition = document.getElementById("videoTransition");
 
-    document.getElementById("clueScreen")
-      .classList.add("active");
+    // 先讓白光逐漸覆蓋畫面
+    transition.classList.add("active");
 
-    // 提示出現後，開始播放解謎背景音樂
-    puzzleMusic.currentTime = 0;
-    puzzleMusic.volume = 0.3;
-    puzzleMusic.loop = true;
+    setTimeout(() => {
 
-    puzzleMusic.play().catch(error => {
-      console.error("背景音樂播放失敗：", error);
-    });
+      // 白光完全覆蓋後切換提示頁面
+      hideAllScreens();
+
+      document.getElementById("clueScreen")
+        .classList.add("active");
+
+      // 背景音樂從靜音開始播放
+      puzzleMusic.pause();
+      puzzleMusic.currentTime = 0;
+      puzzleMusic.volume = 0;
+      puzzleMusic.loop = true;
+
+      puzzleMusic.play().then(() => {
+
+        // 2 秒內淡入至 30% 音量
+        fadeAudio(puzzleMusic, 0, 0.3, 2000);
+
+      }).catch(error => {
+        console.error("背景音樂播放失敗：", error);
+      });
+
+      // 白光逐漸消失，露出提示畫面
+      requestAnimationFrame(() => {
+        transition.classList.remove("active");
+      });
+
+    }, 1500);
 
 
     // 直接開始五分鐘倒數
