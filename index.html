@@ -1338,28 +1338,33 @@ setTimeout(() => {
 });
   }
 
-  if (isWin) {
+if (isWin) {
 
-    // ===== 成功結局 =====
-    // 等待 20 秒後播放跳舞音樂
-    setTimeout(() => {
+  // ===== 成功結局 =====
+  // 等待 20 秒後揭曉真正的駭客
+  setTimeout(() => {
 
-      const revealMusic = new Audio("music/跳舞.mp3");
-      revealMusic.volume = 1;
+    // 更改畫面文字
+    document.getElementById("hackerQuestion").textContent =
+      "徐正庭是駭客";
 
-      revealMusic.addEventListener(
-        "ended",
-        playEndingVideo,
-        { once: true }
-      );
+    // 播放跳舞音樂
+    const revealMusic = new Audio("music/跳舞.mp3");
+    revealMusic.volume = 1;
 
-      revealMusic.play().catch(error => {
-        console.error("跳舞音樂播放失敗：", error);
-        playEndingVideo();
-      });
+    // 音樂結束後播放成功結局影片
+    revealMusic.addEventListener(
+      "ended",
+      playEndingVideo,
+      { once: true }
+    );
 
-    }, 20000);
+    revealMusic.play().catch(error => {
+      console.error("跳舞音樂播放失敗：", error);
+      playEndingVideo();
+    });
 
+  }, 20000);
 
 } else {
 
