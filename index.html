@@ -809,6 +809,16 @@ async function toggleFullscreen() {
 }
 
 window.toggleFullscreen = toggleFullscreen;
+  // ===== 全螢幕時隱藏按鈕，退出後顯示 =====
+document.addEventListener("fullscreenchange", () => {
+  const button = document.getElementById("fullscreenButton");
+
+  if (document.fullscreenElement) {
+    button.style.display = "none";
+  } else {
+    button.style.display = "block";
+  }
+});
   
   const voteURL = new URL("vote.html", window.location.href).href;
 
