@@ -181,188 +181,6 @@
   line-height: 1.5;
 }
 
-    /* ===== 破舊的樂譜紙 ===== */
-
-.sheet-music {
-  position: relative;
-  margin-top: 15px;
-  padding: 18px 12px;
-
-  /* 泛黃紙張與污漬 */
-  background:
-    radial-gradient(
-      ellipse at 12% 20%,
-      rgba(105, 67, 30, 0.28),
-      transparent 35%
-    ),
-    radial-gradient(
-      ellipse at 85% 80%,
-      rgba(88, 55, 25, 0.3),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 65% 15%,
-      rgba(130, 90, 40, 0.18),
-      transparent 25%
-    ),
-    linear-gradient(
-      135deg,
-      #d0b78b,
-      #eee0ba 35%,
-      #d7bf91 75%,
-      #b99b6e
-    );
-
-  /* 不規則破損邊緣 */
-  clip-path: polygon(
-    0% 4%,
-    4% 2%,
-    8% 4%,
-    15% 0%,
-    25% 3%,
-    38% 1%,
-    50% 3%,
-    62% 0%,
-    75% 3%,
-    88% 1%,
-    96% 4%,
-    100% 2%,
-    98% 20%,
-    100% 40%,
-    97% 60%,
-    100% 80%,
-    97% 97%,
-    85% 100%,
-    70% 97%,
-    55% 100%,
-    40% 97%,
-    25% 100%,
-    12% 97%,
-    2% 100%,
-    0% 85%,
-    3% 65%,
-    0% 45%,
-    2% 25%
-  );
-
-  box-shadow: inset 0 0 28px rgba(68, 39, 16, 0.35);
-  transform: rotate(-1.5deg);
-}
-
-/* 紙張摺痕 */
-.sheet-music::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 48%;
-  width: 3px;
-  height: 100%;
-
-  background: linear-gradient(
-    to right,
-    rgba(85, 54, 27, 0.25),
-    rgba(255, 255, 255, 0.35),
-    rgba(85, 54, 27, 0.12)
-  );
-
-  pointer-events: none;
-}
-
-/* 樂譜稍微褪色 */
-.sheet-music svg {
-  display: block;
-  position: relative;
-  width: 100%;
-  opacity: 0.82;
-}
-    
- .suspect-avatar {
-  display: block;
-  width: 190px;
-  height: 190px;
-  object-fit: cover;
-  object-position: center;
-  margin: 0 auto;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 3px solid transparent;
-  image-rendering: pixelated;
-}
-
-.suspect-avatar:hover {
-  border-color: #91c8ee;
-}
-
-.suspect.selected .suspect-avatar {
-  border-color: #ffe18c;
-}
-    
-.suspects {
-  display: grid;
-  grid-template-columns: repeat(4, 220px);
-  gap: 12px;
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 auto;
-  justify-content: center;
-}
-    .suspect {
-      padding: 10px;
-      background: #202c43;
-      border: 2px solid #647b9c;
-    }
-
-    .suspect.selected {
-      border-color: #ffe18c;
-      background: #3b4963;
-    }
-
-    .suspect button {
-      font-size: 13px;
-      padding: 8px;
-    }
-
-  #resultText {
-  font-size: clamp(32px, 5vw, 64px);
-  font-weight: bold;
-  color: #ffe18c;
-  text-align: center;
-  margin: 20px 0;
-  text-shadow: 3px 3px 0 #382a18;
-  animation: resultReveal 0.7s ease-out;
-}
-
-@keyframes resultReveal {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-  
-#flash {
-  position: absolute;
-  inset: 0;
-  background: white;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 20;
-}
-
-#flash.active {
-  animation: whiteFlash 3s ease-out forwards;
-}
-
-@keyframes whiteFlash {
-  0%   { opacity: 1; }
-  15%  { opacity: 1; }
-  100% { opacity: 0; }
-}
-
     /* 五分鐘倒數計時器 */
 #timer {
   position: absolute;
@@ -2095,10 +1913,10 @@ let seatedSceneTimer = null;
 function startGame() {
   hideAllScreens();
 
-  // 開始遊戲時，預先載入四首 WAV
   preloadSuspectMusic();
 
   puzzleMusic.currentTime = 0;
+  puzzleMusic.volume = 0.3;
 
   puzzleMusic.play().catch(err => {
     console.log("解謎音樂播放失敗：", err);
@@ -2108,12 +1926,9 @@ function startGame() {
   animationTime = 0;
   clueShown = false;
 
-  // 固定坐在椅子上
   player.x = 669;
   player.y = 308;
   player.state = "seated";
-
-  hideDialogue();
 
   if (seatedSceneTimer !== null) {
     clearTimeout(seatedSceneTimer);
@@ -2127,44 +1942,15 @@ function startGame() {
   flash.classList.add("active");
 
   canvas.style.opacity = "1";
-// 白光淡去後，主角開始說話
-seatedSceneTimer = setTimeout(() => {
-  if (gameOver) return;
 
-  gameStarted = true;
-  dialogueIndex = 0;
-
-  showDialogue(dialogueLines[0]);
-
-  // 3 秒後顯示第二句
+  // 宿舍畫面停留 3 秒後，自動跳到線索
   seatedSceneTimer = setTimeout(() => {
     if (gameOver) return;
 
-    dialogueIndex = 1;
-    showDialogue(dialogueLines[1]);
-
-    // 3.5 秒後顯示第三句
-    seatedSceneTimer = setTimeout(() => {
-      if (gameOver) return;
-
-      dialogueIndex = 2;
-      showDialogue(dialogueLines[2]);
-
-      // 4 秒後自動進入線索畫面
-      seatedSceneTimer = setTimeout(() => {
-        if (gameOver) return;
-
-        clueShown = true;
-        hideDialogue();
-        showClues();
-
-      }, 4000);
-
-    }, 3500);
+    clueShown = true;
+    showClues();
 
   }, 3000);
-
-}, 3000);
 }
 
 // 主角不再走路
@@ -2192,55 +1978,33 @@ async function showClues() {
   const sessionId = "round_" + Date.now();
   const startedAt = Date.now();
   const endsAt = startedAt + 300000;
+
   votingEndsAt = endsAt;
 
   try {
-    // 建立新的五分鐘投票場次
+    // 建立五分鐘投票場次
     await set(ref(firebaseDB, "sessions/" + sessionId + "/config"), {
       startedAt,
       endsAt,
       status: "open"
     });
 
-    // 告訴所有觀眾目前是哪一場投票
+    // 更新目前投票場次
     await set(ref(firebaseDB, "currentSession"), sessionId);
 
-       // ===== 顯示線索 =====
+    // 顯示線索圖片與 QR Code
     hideAllScreens();
 
     document.getElementById("clueScreen")
       .classList.add("active");
 
-    const clueDialogue = document.getElementById("clueDialogue");
-
-    clueDialogue.style.display = "block";
-    clueDialogue.textContent =
-      "主角：這是……樂譜？旁邊還有一張奇怪的便條紙。";
-
-  setTimeout(() => {
-  if (gameOver) return;
-
-  clueDialogue.textContent =
-    "主角：等等！這裡還有一個 QR Code！可以麻煩大家拿出手機，掃描上面的 QR Code，幫我找出真正的駭客是誰嗎？";
-
-  // 給觀眾 7 秒閱讀新台詞
-  setTimeout(() => {
-    if (gameOver) return;
-
-    clueDialogue.style.display = "none";
-
-    // 對話結束後，正式開始五分鐘倒數
-    votingEndsAt = Date.now() + 300000;
-
+    // 直接開始五分鐘倒數
     startTimer();
 
+    // 顯示公布結果按鈕
     document.getElementById(
       "revealResultsButton"
     ).style.display = "block";
-
-  }, 7000);
-
-}, 3500);
 
   } catch (error) {
     console.error("建立投票場次失敗：", error);
