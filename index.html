@@ -2178,7 +2178,11 @@ let seatedSceneTimer = null;
 function startGame() {
   hideAllScreens();
 
+  // 開始遊戲時，預先載入四首 WAV
+  preloadSuspectMusic();
+
   puzzleMusic.currentTime = 0;
+
   puzzleMusic.play().catch(err => {
     console.log("解謎音樂播放失敗：", err);
   });
@@ -2332,24 +2336,46 @@ async function showClues() {
   // ====================================
 const correctSuspect = 0;
 
+
 const suspects = [
   {
     image: "images/徐正庭.jpg",
-    audio: "music/hacker.mp3"
+    audio: "music/徐正庭.wav"
   },
   {
     image: "images/許宸瑋.jpg",
-    audio: "music/viola.mp3"
+    audio: "music/許宸瑋.wav"
   },
   {
     image: "images/周裕軒.jpg",
-    audio: "music/vocal.mp3"
+    audio: "music/周裕軒.wav"
   },
   {
     image: "images/洪昕妤.jpg",
-    audio: "music/guitar.mp3"
+    audio: "music/洪昕妤.wav"
   }
 ];
+
+// 四首音樂只建立一次
+const suspectAudios = suspects.map(suspect => {
+  const audio = new Audio(suspect.audio);
+  audio.preload = "auto";
+  audio.volume = 1;
+
+  audio.addEventListener("error", () => {
+    console.error("音樂載入失敗：", suspect.audio);
+  });
+
+  return audio;
+});
+
+// 預先載入四首音樂
+function preloadSuspectMusic() {
+  suspectAudios.forEach(audio => {
+    audio.load();
+  });
+}
+
   
  function showSuspects() {
   hideAllScreens();
@@ -2422,70 +2448,86 @@ function updatePlayButtons() {
   });
 }
 
+
 function playMusic(index) {
 
-  // 同一位嫌疑犯：暫停或繼續
-  if (currentAudio && currentSuspectIndex === index) {
-    const audio = currentAudio;
+  const newAudio = suspectAudios[index];
 
-    if (!audio.paused) {
-      fadeAudio(audio, audio.volume, 0, 500, () => {
-        audio.pause();
-        updatePlayButtons();
-      });
+  // 同一首音樂：播放或暫停
+  if (currentAudio === newAudio) {
+
+    if (!newAudio.paused) {
+      newAudio.pause();
+      updatePlayButtons();
     } else {
-      audio.play().then(() => {
-        fadeAudio(audio, audio.volume, 1, 500);
-        updatePlayButtons();
-      }).catch(console.error);
+      newAudio.play()
+        .then(updatePlayButtons)
+        .catch(console.error);
     }
+
     return;
   }
 
-  // 背景音樂淡出
-  fadeAudio(puzzleMusic, puzzleMusic.volume, 0, 2000, () => {
-    puzzleMusic.pause();
-  });
-
-  // 前一位嫌疑犯淡出
-  if (currentAudio) {
-    const oldAudio = currentAudio;
-    oldAudio.onended = null;
-
-    fadeAudio(oldAudio, oldAudio.volume, 0, 1000, () => {
-      oldAudio.pause();
-      oldAudio.currentTime = 0;
-    });
+  // 停止背景音樂
+  if (fadeTimers.has(puzzleMusic)) {
+    clearInterval(fadeTimers.get(puzzleMusic));
+    fadeTimers.delete(puzzleMusic);
   }
 
-  // 新嫌疑犯音樂淡入
-  const newAudio = new Audio(suspects[index].audio);
+  puzzleMusic.pause();
 
+  // 停止上一首嫌疑犯音樂
+  if (currentAudio) {
+
+    if (fadeTimers.has(currentAudio)) {
+      clearInterval(fadeTimers.get(currentAudio));
+      fadeTimers.delete(currentAudio);
+    }
+
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio.onended = null;
+  }
+
+  // 使用已預先載入的音樂
   currentAudio = newAudio;
   currentSuspectIndex = index;
+
+  newAudio.currentTime = 0;
   newAudio.volume = 0;
 
   newAudio.play().then(() => {
-    fadeAudio(newAudio, 0, 1, 2000);
-    updatePlayButtons();
-  }).catch(console.error);
 
-  // 播放結束後，恢復解謎音樂
+    // 只淡入 0.3 秒
+    fadeAudio(newAudio, 0, 1, 300);
+
+    updatePlayButtons();
+
+  }).catch(error => {
+    console.error("嫌疑犯音樂播放失敗：", error);
+  });
+
+  // 音樂播放結束
   newAudio.onended = () => {
+
     if (currentAudio !== newAudio) return;
 
     currentAudio = null;
     currentSuspectIndex = -1;
+
     updatePlayButtons();
 
+    // 恢復解謎背景音樂
     puzzleMusic.volume = 0;
+
     puzzleMusic.play().then(() => {
-      fadeAudio(puzzleMusic, 0, 0.3, 2000);
+      fadeAudio(puzzleMusic, 0, 0.3, 1000);
     }).catch(console.error);
   };
 
   updatePlayButtons();
 }
+
 
   // ====================================
   // 確認駭客身分
