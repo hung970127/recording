@@ -563,7 +563,19 @@
   公布結果
 </button>
 
+<!-- 提前結束投票確認視窗 -->
+<div id="endVoteConfirm" class="screen" style="z-index: 150; background: rgba(0,0,0,0.9);">
+  <h1 style="color: #ff7777;">確定提前結束投票？</h1>
+  <p style="font-size: 22px;">此操作無法復原，將立即公布投票結果。</p>
 
+  <div>
+    <button onclick="cancelEndVote()">取消</button>
+    <button onclick="confirmEndVote()" style="background: #8b3030; border-color: #ff7777;">
+      確定公布
+    </button>
+  </div>
+</div>
+  
 <div id="videoScreen" class="screen">
   <video
     id="storyVideo"
@@ -1101,9 +1113,12 @@ async function revealResultsEarly() {
     return;
   }
 
-  const confirmed = confirm(
-    "確定要提前結束投票並公布結果嗎？\n此操作無法復原。"
-  );
+ if (!endVoteConfirmed) {
+  document.getElementById("endVoteConfirm").classList.add("active");
+  return;
+}
+
+endVoteConfirmed = false;
 
   if (!confirmed) return;
 
@@ -1160,6 +1175,22 @@ async function revealResultsEarly() {
 }
 
 window.revealResultsEarly = revealResultsEarly;
+  let endVoteConfirmed = false;
+
+function cancelEndVote() {
+  document.getElementById("endVoteConfirm").classList.remove("active");
+  endVoteConfirmed = false;
+}
+
+function confirmEndVote() {
+  document.getElementById("endVoteConfirm").classList.remove("active");
+  endVoteConfirmed = true;
+  revealResultsEarly();
+}
+
+window.cancelEndVote = cancelEndVote;
+window.confirmEndVote = confirmEndVote;
+  
 // ===== 提示畫面按空白鍵公布結果 =====
 document.addEventListener("keydown", (event) => {
   if (event.code !== "Space" || event.repeat) return;
