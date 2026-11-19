@@ -758,7 +758,8 @@ function fadeAudio(audio, from, to, duration = 2000, onComplete = null) {
   fadeTimers.set(audio, timer);
 }
   
-const puzzleMusic = new Audio("music/puzzle.mp3");
+const puzzleMusic = new Audio("music/puzzle.wav");
+puzzleMusic.preload = "auto";
 puzzleMusic.loop = true;
 puzzleMusic.volume = 0.3;
  const voteSound = new Audio("music/票數.wav");
