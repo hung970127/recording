@@ -993,6 +993,10 @@ puzzleMusic.loop = true;
 puzzleMusic.volume = 0.3;
 const voteSound = new Audio("music/票數.mp3");
 voteSound.volume = 0.8;
+  const successEndingMusic = new Audio("music/成功結尾音樂.mp3");
+successEndingMusic.preload = "auto";
+successEndingMusic.volume = 1;
+  
   // Start 按鈕音效
 const startButtonSound = new Audio("music/按鈕.mp3");
 startButtonSound.preload = "auto";
@@ -1349,23 +1353,23 @@ setTimeout(() => {
     .classList.add("active");
 
   // 播放結局影片
- function playEndingVideo() {
+function playEndingVideo() {
   const endingVideo = isWin
     ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
     : "https://github.com/hung970127/recording/releases/download/v1.9/end.final2.mp4";
 
-  // 播放結局影片
+  // 成功結局：影片與音樂同時開始
+  if (isWin) {
+    successEndingMusic.pause();
+    successEndingMusic.currentTime = 0;
+    successEndingMusic.play().catch(console.error);
+  }
+
   playStoryVideo(endingVideo, null);
 
-  // 影片播放完畢後，停留在最後一幀
+  // 影片結束後停留在最後一幀
   storyVideo.addEventListener("ended", function stayOnLastFrame() {
-    storyVideo.removeEventListener("ended", stayOnLastFrame);
-
-    storyVideo.currentTime = Math.max(
-      0,
-      storyVideo.duration - 0.05
-    );
-
+    storyVideo.currentTime = Math.max(0, storyVideo.duration - 0.05);
     storyVideo.pause();
   }, { once: true });
 }
