@@ -366,7 +366,7 @@ const audioPlayers = suspects.map(suspect => {
 // 記錄已下載完成的音樂
 const audioBlobURLs = new Array(suspects.length).fill(null);
 
-// 主動下載完整 WAV
+// 主動下載完整 WAV，但不干擾正在播放的音樂
 async function preloadOneMusic(index) {
   if (audioBlobURLs[index]) return;
 
@@ -379,22 +379,14 @@ async function preloadOneMusic(index) {
 
     const blob = await response.blob();
 
-    const blobURL = URL.createObjectURL(blob);
-    audioBlobURLs[index] = blobURL;
-
-    // 如果這首還沒開始播放，就改用完整下載的檔案
-    const audio = audioPlayers[index];
-
-    if (audio.paused && audio.currentTime === 0) {
-      audio.src = blobURL;
-      audio.load();
-    }
+    audioBlobURLs[index] = URL.createObjectURL(blob);
 
     console.log("WAV 預載完成：", suspects[index].name);
 
   } catch (error) {
-    console.error("WAV 預載失敗：", error);
+    console.error("WAV 預載失敗：", suspects[index].audio, error);
   }
+}
 }
 
 // 四首同時開始下載
@@ -467,10 +459,9 @@ function renderSuspects() {
   updateButtons();
 }
 
-
 function playMusic(index) {
 
-  // 同一首正在播放：按下後暫停
+  // 同一首正在播放，就暫停
   if (playingIndex === index && !audioPlayer.paused) {
     audioPlayer.pause();
     playingIndex = -1;
@@ -480,37 +471,33 @@ function playMusic(index) {
 
   // 停止上一首
   audioPlayer.pause();
-  audioPlayer.currentTime = 0;
 
-  // 切換播放器
-  audioPlayer = audioPlayers[index];
+  // 選擇播放器
+  const audio = audioPlayers[index];
+  audioPlayer = audio;
 
-  // 優先使用完整下載的 WAV
-  if (audioBlobURLs[index]) {
-    if (audioPlayer.src !== audioBlobURLs[index]) {
-      audioPlayer.src = audioBlobURLs[index];
-      audioPlayer.load();
-    }
-  } else if (!audioPlayer.src) {
-    // 還沒下載完成時，直接使用原始網址播放
-    audioPlayer.src = suspects[index].audio;
-    audioPlayer.load();
+  // 有完整下載的 WAV 就使用記憶體版本
+  // 否則直接使用原始 WAV 網址
+  const source = audioBlobURLs[index] || suspects[index].audio;
+
+  if (audio.src !== new URL(source, location.href).href) {
+    audio.src = source;
   }
 
-  audioPlayer.currentTime = 0;
+  audio.currentTime = 0;
   playingIndex = index;
 
-  const selectedAudio = audioPlayer;
+  showMessage("正在播放音樂……");
 
-  selectedAudio.play()
+  audio.play()
     .then(() => {
-      if (audioPlayer !== selectedAudio) return;
+      if (audioPlayer !== audio || playingIndex !== index) return;
 
       showMessage("");
       updateButtons();
     })
     .catch(error => {
-      if (audioPlayer !== selectedAudio) return;
+      if (audioPlayer !== audio || playingIndex !== index) return;
 
       console.error("音樂播放失敗：", error);
 
