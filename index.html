@@ -22,13 +22,23 @@
       min-height: 100vh;
     }
 
-    #game {
-      position: relative;
-      width: min(100vw, 177.78vh);
-      aspect-ratio: 16 / 9;
-      background: #151d32;
-      overflow: hidden;
-    }
+  #game {
+  position: relative;
+  width: min(100vw, 177.78vh);
+  aspect-ratio: 16 / 9;
+  background: #151d32;
+  overflow: hidden;
+}
+
+#game:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #080c18;
+}
 
     canvas {
       width: 100%;
@@ -387,6 +397,26 @@
 <body>
 
 <div id="game">
+
+<button
+  id="fullscreenButton"
+  onclick="toggleFullscreen()"
+  style="
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 200;
+    padding: 8px 14px;
+    background: rgba(8, 12, 25, 0.85);
+    border: 2px solid #91c8ee;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  "
+>
+  ⛶ 全螢幕
+</button>
+
 <div id="timer">05:00</div>
   
 <button
@@ -630,6 +660,34 @@ async function loginAdmin() {
 
 window.loginAdmin = loginAdmin;
 
+  // ===== 全螢幕切換 =====
+
+async function toggleFullscreen() {
+  const game = document.getElementById("game");
+
+  try {
+    if (!document.fullscreenElement) {
+      await game.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch (error) {
+    console.error("無法切換全螢幕：", error);
+  }
+}
+
+window.toggleFullscreen = toggleFullscreen;
+
+// 更新按鈕文字
+document.addEventListener("fullscreenchange", () => {
+  const button = document.getElementById("fullscreenButton");
+
+  if (document.fullscreenElement) {
+    button.textContent = "⛶ 退出全螢幕";
+  } else {
+    button.textContent = "⛶ 全螢幕";
+  }
+});
   
   const voteURL = new URL("vote.html", window.location.href).href;
 
