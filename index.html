@@ -2152,14 +2152,27 @@ function startGame() {
 
   canvas.style.opacity = "1";
 
-  // 宿舍畫面停留 3 秒後，自動跳到線索
-  seatedSceneTimer = setTimeout(() => {
+
+  // 進入宿舍後，播放駭客講話
+  const hackerVoice = new Audio("music/駭客講話.mp3");
+
+  // 音檔播完後才顯示提示
+  hackerVoice.addEventListener("ended", () => {
     if (gameOver) return;
 
     clueShown = true;
     showClues();
+  }, { once: true });
 
+  // 進入宿舍後等待 3 秒再開始播放
+  seatedSceneTimer = setTimeout(() => {
+    if (gameOver) return;
+
+    hackerVoice.play().catch(error => {
+      console.error("駭客講話播放失敗：", error);
+    });
   }, 3000);
+
 }
 
 // 主角不再走路
