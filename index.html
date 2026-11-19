@@ -1210,9 +1210,9 @@ setTimeout(() => {
 
   // 播放結局影片
   function playEndingVideo() {
-    const endingVideo = isWin
-      ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
-      : "https://github.com/hung970127/recording/releases/download/v1.4/default.mp4";
+   const endingVideo = isWin
+  ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
+  : "https://github.com/hung970127/recording/releases/download/v1.5/bad.end.mp4";
 
     playStoryVideo(endingVideo, () => {
       showFinalResult();
@@ -1241,34 +1241,32 @@ setTimeout(() => {
 
     }, 20000);
 
-  } else {
 
-    // ===== 失敗結局 =====
-    // 等待主持人按下空白鍵
+} else {
 
-    function startFailureVideo(event) {
+  // ===== 失敗結局 =====
+  // 停留在「XXX是駭客嗎？」畫面，等待空白鍵
 
-      if (event.code !== "Space") return;
+  function startFailureVideo(event) {
+    if (event.code !== "Space" || event.repeat) return;
 
-      // 避免空白鍵捲動畫面
-      event.preventDefault();
+    event.preventDefault();
 
-      // 移除監聽，防止重複觸發
-      document.removeEventListener(
-        "keydown",
-        startFailureVideo
-      );
-
-      // 播放失敗影片
-      playEndingVideo();
-    }
-
-    document.addEventListener(
+    document.removeEventListener(
       "keydown",
       startFailureVideo
     );
 
+    playEndingVideo();
   }
+
+  document.addEventListener(
+    "keydown",
+    startFailureVideo
+  );
+
+}
+
 }, 4500);
 
 
