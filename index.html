@@ -592,7 +592,9 @@
 
 <!-- 第二頁：駭客身分揭曉前的懸念畫面 -->
 <div id="hackerRevealScreen" class="screen">
-  <h1 class="hacker-question">駭客是徐正庭嗎？</h1>
+<h1 class="hacker-question" id="hackerQuestion">
+  誰是駭客？
+</h1>
   <p>正在揭曉真正的駭客身分……</p>
 </div>
 
@@ -1159,33 +1161,59 @@ if (winners.length === 1) {
 }
     }
 
+
+```javascript
 // ===== 根據投票結果決定結局 =====
 
-// 徐正庭是第一位嫌疑人
+// 取得最高票數
+const maxCount = Math.max(...counts);
+
+// 找出所有最高票者
+const winnerIndexes = counts
+  .map((count, index) =>
+    count === maxCount ? index : -1
+  )
+  .filter(index => index !== -1);
+
+// 判斷是否成功
 const isWin =
   total > 0 &&
-  counts[0] === Math.max(...counts) &&
-  counts.filter(count => count === counts[0]).length === 1;
+  winnerIndexes.length === 1 &&
+  winnerIndexes[0] === 0;
 
-// 等待投票結果動畫結束
+// 決定懸念畫面顯示的名字
+let hackerName;
+
+if (total === 0) {
+  hackerName = "沒有人";
+} else if (winnerIndexes.length === 1) {
+  hackerName = names[winnerIndexes[0]];
+} else {
+  hackerName = winnerIndexes
+    .map(index => names[index])
+    .join("、");
+}
+
+// 等待票數動畫結束
 setTimeout(() => {
 
-  // 停止票數音效
   voteSound.pause();
   voteSound.currentTime = 0;
 
-  // 切換到懸念畫面
+  // 顯示懸念畫面
   hideAllScreens();
+
+  document.getElementById("hackerQuestion")
+    .textContent = `${hackerName}是駭客嗎？`;
 
   document.getElementById("hackerRevealScreen")
     .classList.add("active");
 
- // 準備跳舞.mp3
-const revealMusic = new Audio("music/跳舞.mp3");
-revealMusic.volume = 1;
-revealMusic.preload = "auto";
+  // 準備跳舞音樂
+  const revealMusic = new Audio("music/跳舞.mp3");
+  revealMusic.volume = 1;
+  revealMusic.preload = "auto";
 
-  // 防止音樂結束事件重複執行
   let endingStarted = false;
 
   function continueToEnding() {
@@ -1194,43 +1222,38 @@ revealMusic.preload = "auto";
 
     revealMusic.pause();
 
-    if (isWin) {
+    // 根據投票結果選擇影片
+    const endingVideo = isWin
+      ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
+      : "https://github.com/hung970127/recording/releases/download/v1.3/default.mp4";
 
-      // 勝利影片
-      playStoryVideo(
-        "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4",
-        () => {
-          showFinalResult();
-        }
-      );
-
-    } else {
-
-      // 失敗影片尚未設定
-      showFinalResult();
-
-    }
+    playStoryVideo(
+      endingVideo,
+      () => {
+        showFinalResult();
+      }
+    );
   }
 
-  // 音樂播放完畢後進入結局
+  // 音樂播完後播放結局影片
   revealMusic.addEventListener(
     "ended",
     continueToEnding,
     { once: true }
   );
 
- // 懸念畫面先停留 20 秒
-setTimeout(() => {
+  // 懸念畫面停留 20 秒
+  setTimeout(() => {
 
-  // 20 秒後開始播放跳舞.mp3
-  revealMusic.play().catch(error => {
-    console.error("跳舞.mp3 播放失敗：", error);
-    continueToEnding();
-  });
+    revealMusic.play().catch(error => {
+      console.error("跳舞.mp3 播放失敗：", error);
+      continueToEnding();
+    });
 
-}, 20000);
+  }, 20000);
 
 }, 4500);
+```
 
 
   } catch (error) {
