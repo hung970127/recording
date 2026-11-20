@@ -1,303 +1,2725 @@
-
++
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>駭客在哪裡｜主持人控制台</title>
-  <style>
+  <title>Don't Click</title>
+
+  <style> 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       background: #080c18;
       color: white;
       font-family: monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+  #game {
+  position: relative;
+  width: min(100vw, 177.78vh);
+  aspect-ratio: 16 / 9;
+  background: #151d32;
+  overflow: hidden;
+}
+
+
+#game:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  background: black;
+}
+
+    #game:fullscreen #fullscreenButton {
+  display: none !important;
+}
+
+    #videoScreen {
+  padding: 0 !important;
+  background: black;
+  overflow: hidden;
+}
+
+#videoScreen video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+ canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  image-rendering: pixelated;
+}
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 12, 25, 0.94);
+      padding: 30px;
       text-align: center;
-      padding: 30px 15px;
     }
-    h1 { color: #92d8ff; }
-    input, button {
-      display: block;
-      box-sizing: border-box;
-      width: min(100%, 350px);
-      margin: 12px auto;
-      padding: 13px;
-      font-size: 16px;
-      border-radius: 6px;
+
+    .screen.active {
+      display: flex;
     }
+
+    h1 {
+      font-size: clamp(24px, 4vw, 48px);
+      color: #92d8ff;
+    }
+
+    h2 {
+      color: #e9d6a7;
+    }
+
     button {
-      background: #263954;
+      padding: 12px 22px;
+      margin: 8px;
       border: 2px solid #91c8ee;
+      background: #263954;
       color: white;
+      font-family: inherit;
+      font-size: 16px;
       cursor: pointer;
     }
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
+
+    button:hover {
+      background: #426b91;
     }
-    #timer {
-      font-size: 48px;
-      color: #ffe18c;
-      margin: 25px;
-    }
-    #status, #message {
-      margin: 15px;
-      line-height: 1.7;
-    }
-    #results {
-      max-width: 420px;
-      margin: 25px auto;
-      text-align: left;
-    }
-    .result {
-      padding: 12px;
-      border-bottom: 1px solid #647b9c;
-    }
-    #panel { display: none; }
+
+ #dialogue {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 33.33%;
+  padding: 25px 40px 65px;
+
+  background: rgba(9, 15, 30, 0.95);
+  border: 4px solid #9abbd1;
+  color: white;
+  font-size: clamp(20px, 2.8vw, 36px);
+  line-height: 1.6;
+  text-align: left;
+  z-index: 40;
+  display: none;
+  overflow-y: auto;
+}
+
+#dialogueNext {
+  position: absolute;
+  right: 25px;
+  bottom: 15px;
+  margin: 0;
+  padding: 7px 16px;
+  background: transparent;
+  border: none;
+  color: #92d8ff;
+  font-size: clamp(16px, 1.8vw, 24px);
+  font-weight: bold;
+  cursor: pointer;
+  animation: continueBlink 1.2s infinite alternate;
+}
+
+#dialogueNext:hover {
+  color: white;
+}
+
+@keyframes continueBlink {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+
+  
+/* ===== 駭客線索頁面 ===== */
+#clueScreen {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(50, 255, 160, 0.025) 4px
+    ),
+    radial-gradient(ellipse at center, #102c27, #030b0d 80%);
+  color: #d8fff0;
+  padding: 4% 5%;
+  overflow: hidden;
+}
+
+#clueScreen > h2 {
+  color: #8bffcb;
+  font-size: clamp(24px, 3.2vw, 42px);
+  letter-spacing: 5px;
+  margin: 0 0 22px;
+  text-shadow: 0 0 20px #23ff9b77;
+}
+
+#clueScreen > h2::before {
+  content: "[ SYSTEM BREACH ]";
+  display: block;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: #48a98c;
+  margin-bottom: 10px;
+}
+
+.clue-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 24px;
+  width: 94%;
+  max-width: 1150px;
+  max-height: 72%;
+}
+
+.hint-panel,
+.qr-panel {
+  position: relative;
+  min-width: 0;
+  background: rgba(4, 20, 20, 0.92);
+  border: 1px solid #328d72;
+  box-shadow:
+    0 0 20px #00ff8820,
+    inset 0 0 30px #00ff8810;
+  padding: 20px;
+}
+
+.hint-panel {
+  flex: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hint-panel::before {
+  content: "FILE_001 // ENCRYPTED EVIDENCE";
+  position: absolute;
+  top: 9px;
+  left: 14px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #67c7a6;
+}
+
+.hint-image {
+  display: block;
+  width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  margin-top: 10px;
+}
+
+.qr-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.qr-panel::before {
+  content: "SECURE CONNECTION // ACTIVE";
+  color: #62e6ac;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.qr-panel h2 {
+  color: #d6fff0;
+  font-size: clamp(15px, 1.8vw, 24px);
+  margin: 0;
+}
+
+#voteQRCode {
+  width: clamp(120px, 16vw, 200px);
+  height: auto;
+  aspect-ratio: 1;
+  background: white;
+  padding: 10px;
+  border: 3px solid #50e8a3;
+  box-shadow: 0 0 25px #30ff9b55;
+}
+
+.qr-panel p {
+  color: #a6d6c5;
+  font-size: clamp(12px, 1.3vw, 16px);
+  line-height: 1.7;
+  max-width: 300px;
+  margin: 0;
+}
+
+@media (max-width: 650px) {
+  #clueScreen {
+    padding: 45px 12px 12px;
+    overflow-y: auto;
+  }
+
+  .clue-layout {
+    flex-direction: column;
+    max-height: none;
+    gap: 12px;
+  }
+
+  .hint-panel,
+  .qr-panel {
+    padding: 16px;
+  }
+
+  .hint-image {
+    max-height: 32vh;
+  }
+}
+
+    /* 五分鐘倒數計時器 */
+#timer {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 30;
+  color: #ffe18c;
+  background: rgba(8, 12, 25, 0.9);
+  border: 2px solid #91c8ee;
+  padding: 10px 18px;
+  font-size: 26px;
+  font-weight: bold;
+  font-family: monospace;
+  display: none;
+}
+
+#timer.warning {
+  color: #ff5555;
+  border-color: #ff5555;
+}
+  
+/* ===== 直接使用 Canvas 宿舍作為封面 ===== */
+
+#start {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  z-index: 5;
+  justify-content: space-between;
+}
+
+/* 上方標題，不遮住中央木樓梯 */
+#start .cover-heading {
+  position: absolute;
+  top: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  padding: 10px;
+  background: rgba(4, 18, 15, 0.85);
+  border: 4px solid #6bcba0;
+  box-shadow: 6px 6px 0 #07120e;
+}
+
+#start .cover-heading h1 {
+  margin: 0;
+  font-size: clamp(24px, 4.5vw, 60px);
+  color: #b4ffd1;
+  text-shadow: 4px 4px #24573b;
+}
+
+#start .cover-heading p {
+  margin: 5px 0 0;
+  color: #87dcb3;
+  font-size: clamp(10px, 1.3vw, 18px);
+  letter-spacing: 3px;
+}
+
+/* 開始調查按鈕 */
+#start .cover-launch {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  width: 30%;
+  padding: 12px;
+  background: #195c40;
+  border: 4px solid #a4ffca;
+  box-shadow: 5px 5px 0 #081b12;
+  color: #e0ffeb;
+  font-size: clamp(14px, 2vw, 27px);
+  font-weight: bold;
+  z-index: 10;
+}
+
+#start .cover-launch:hover {
+  background: #30865a;
+}
+
+/* 製作團隊 */
+#start .cover-credits {
+  position: absolute;
+  bottom: 2%;
+  left: 0;
+  width: 100%;
+  padding: 5px;
+  background: rgba(5, 16, 14, 0.85);
+  color: #d0efdc;
+  font-size: clamp(9px, 1.1vw, 15px);
+  text-align: center;
+}
+ 
+    /* ===== 前導影片白光轉場 ===== */
+#videoTransition {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+ transition: opacity 1.5s ease-in-out;
+}
+
+#videoTransition.active {
+  opacity: 1;
+}
+    #dialogueNext {
+  position: absolute;
+  right: 25px;
+  bottom: 15px;
+  padding: 7px 16px;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: #92d8ff;
+  font-size: 22px;
+  font-weight: bold;
+  pointer-events: none;
+  animation: continueBlink 1.2s infinite alternate;
+}
+
+@keyframes continueBlink {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+#resultScreen {
+  gap: 12px;
+  overflow-y: auto;
+}
+
+#resultScreen h1 {
+  margin: 0;
+}
+
+#resultTotal {
+  font-size: 22px;
+  color: #ffe18c;
+  margin: 0 0 8px;
+}
+
+#resultCards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  width: 95%;
+}
+
+.result-card {
+  background: #263954;
+  border: 3px solid #647b9c;
+  border-radius: 8px;
+  padding: 14px 8px;
+  text-align: center;
+  min-width: 0;
+}
+
+.result-card img {
+  width: min(100%, 150px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 3px solid #91c8ee;
+  border-radius: 6px;
+}
+
+.result-name {
+  font-size: clamp(14px, 1.8vw, 22px);
+  margin: 10px 0;
+}
+
+.result-votes {
+  color: #ffe18c;
+  font-size: clamp(17px, 2.3vw, 30px);
+  font-weight: bold;
+}
+
+.result-percent {
+  color: #92d8ff;
+  font-size: clamp(24px, 3.3vw, 42px);
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.result-bar {
+  height: 12px;
+  background: #101827;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.result-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #92d8ff;
+  border-radius: 8px;
+}
+
+    /* ===== 駭客身分懸念畫面 ===== */
+
+#hackerRevealScreen {
+  background: #05070d;
+  z-index: 50;
+  gap: 25px;
+}
+
+#hackerRevealScreen .hacker-question {
+  color: #ff4545;
+  font-size: clamp(30px, 5.5vw, 75px);
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+  animation: hackerPulse 1.2s infinite alternate;
+}
+
+#hackerRevealScreen p {
+  color: #a6b8cc;
+  font-size: clamp(14px, 2vw, 24px);
+}
+
+@keyframes hackerPulse {
+  from {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
   </style>
 </head>
+
 <body>
 
-  <h1>駭客在哪裡？</h1>
-  <h2>主持人控制台</h2>
+<div id="game">
 
-  <div id="login">
-    <input id="email" type="email" placeholder="主持人電子郵件">
-    <input id="password" type="password" placeholder="密碼">
-    <button id="loginBtn">登入</button>
+<button
+  id="fullscreenButton"
+  onclick="toggleFullscreen()"
+  style="
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 200;
+    padding: 8px 14px;
+    background: rgba(8, 12, 25, 0.85);
+    border: 2px solid #91c8ee;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  "
+>
+  ⛶ 全螢幕
+</button>
+
+<div id="timer">05:00</div>
+  
+<button
+  id="revealResultsButton"
+  onclick="revealResultsEarly()"
+  style="
+    position:absolute;
+    top:85px;
+    right:22px;
+    z-index:31;
+    background:#8b3030;
+    border:2px solid #ff7777;
+    display:none;
+  "
+>
+  公布結果
+</button>
+
+<!-- 提前結束投票確認視窗 -->
+<div id="endVoteConfirm" class="screen" style="z-index: 150; background: rgba(0,0,0,0.9);">
+  <h1 style="color: #ff7777;">確定提前結束投票？</h1>
+  <p style="font-size: 22px;">此操作無法復原，將立即公布投票結果。</p>
+
+  <div>
+    <button onclick="cancelEndVote()">取消</button>
+    <button onclick="confirmEndVote()" style="background: #8b3030; border-color: #ff7777;">
+      確定公布
+    </button>
+  </div>
+</div>
+  
+<div id="videoScreen" class="screen">
+  <video
+    id="storyVideo"
+    playsinline
+    style="
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    "
+  ></video>
+
+</div>
+
+  <canvas id="canvas" width="960" height="540"></canvas>
+  
+<div id="flash"></div>
+  <div id="videoTransition"></div>
+  
+  <!-- 主持人登入畫面 -->
+<div id="adminLogin" class="screen active">
+  <h1>主持人登入</h1>
+  <p>請先登入，才能啟動投票系統</p>
+
+  <input
+    id="adminEmail"
+    type="email"
+    placeholder="Firebase 主持人 Email"
+  >
+
+  <input
+    id="adminPassword"
+    type="password"
+    placeholder="密碼"
+  >
+
+  <button onclick="loginAdmin()">登入並準備遊戲</button>
+
+  <p id="adminLoginMessage"></p>
+</div>
+  
+<!-- ===== 2D 像素宿舍封面 ===== -->
+<div id="start" class="screen">
+
+  <div class="cover-heading">
+    <h1>Don't Click</h1>
   </div>
 
-  <div id="panel">
-    <p id="status">尚未開始投票</p>
-    <div id="timer">05:00</div>
+  <button
+    class="cover-launch"
+    onclick="startOpening()">
+    ▶ Start
+  </button>
 
-    <button id="startBtn">開始新的五分鐘投票</button>
-    <button id="closeBtn" disabled>關閉本場投票</button>
-    <button id="resultBtn" disabled>公布投票結果</button>
-
-    <div id="results"></div>
-    <button id="logoutBtn">登出</button>
+  <div class="cover-credits">
+    周裕軒 ｜ 許宸瑋 ｜ 徐正庭 ｜ 張聖偉 ｜ 羅思穎 ｜ 洪昕妤
   </div>
 
-  <p id="message"></p>
+</div>
 
-  <script type="module">
-    import { initializeApp } from
-      "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
 
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
 
-    import {
-      getDatabase,
-      ref,
-      set,
-      get,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+<!-- ===== 駭客線索與 QR Code ===== -->
+<div id="clueScreen" class="screen">
 
-    import {
-      firebaseConfig,
-      ADMIN_UID
-    } from "./firebase-config.js";
+  <h2>發現神祕線索</h2>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+  <div class="clue-layout">
 
-    let sessionId = null;
-    let sessionConfig = null;
-    let timerInterval = null;
-    let unsubscribe = null;
+    <!-- 左側：解密線索 -->
+    <div class="hint-panel">
+      <img
+        src="images/key.jpg"
+        alt="提示"
+        class="hint-image"
+        onerror="console.error('提示圖片載入失敗：', this.src)"
+      >
+    </div>
 
-    const $ = id => document.getElementById(id);
+    <!-- 右側：投票 QR Code -->
+    <div class="qr-panel">
 
-    function message(text) {
-      $("message").textContent = text;
+      <h2>掃描 QR Code 開始調查</h2>
+
+      <img
+        id="voteQRCode"
+        alt="投票 QR Code"
+      >
+
+      <p>
+        請使用手機聆聽四位嫌疑犯的訊號，
+        分析線索並投下你的選擇。
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+  <!-- 嫌疑人選擇 -->
+  <div id="suspectScreen" class="screen">
+    <h2>找出真正的駭客</h2>
+    <p>請聆聽四位嫌疑人的專屬音樂</p>
+
+    <div class="suspects" id="suspectList"></div>
+
+    <button onclick="confirmSuspect()">
+      確認指認
+    </button>
+  </div>
+
+
+<!-- 第一頁：公布票數 -->
+<div id="resultScreen" class="screen">
+  <h1>投票結果</h1>
+
+  <p id="resultTotal">正在統計票數……</p>
+
+  <div id="resultCards"></div>
+
+</div>
+
+<!-- 第二頁：駭客身分揭曉前的懸念畫面 -->
+<div id="hackerRevealScreen" class="screen">
+<h1 class="hacker-question" id="hackerQuestion">
+  誰是駭客？
+</h1>
+  <p>正在揭曉真正的駭客身分……</p>
+</div>
+
+<!-- 第三頁：最終投票結果 -->
+<div id="finalResultScreen" class="screen">
+  <h1>最終投票結果</h1>
+  <div id="resultText"></div>
+</div>
+
+</div>
+
+<script type="module">
+  
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+  
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  onValue
+} from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+import {
+  firebaseConfig,
+  ADMIN_UID
+} from "./firebase-config.js";
+
+const firebaseApp = initializeApp(firebaseConfig);
+const firebaseAuth = getAuth(firebaseApp);
+const firebaseDB = getDatabase(firebaseApp);
+
+// 讓 Firebase 記住登入狀態
+const authReady = setPersistence(
+  firebaseAuth,
+  browserLocalPersistence
+);
+
+// 自動檢查主持人是否已經登入
+onAuthStateChanged(firebaseAuth, async (user) => {
+  await authReady;
+
+  const loginScreen = document.getElementById("adminLogin");
+  const startScreen = document.getElementById("start");
+  const message = document.getElementById("adminLoginMessage");
+
+  if (user && user.uid === ADMIN_UID) {
+    loginScreen.classList.remove("active");
+    startScreen.classList.add("active");
+  } else {
+    startScreen.classList.remove("active");
+    loginScreen.classList.add("active");
+
+    if (user && user.uid !== ADMIN_UID) {
+      await signOut(firebaseAuth);
+      message.textContent = "這個帳號不是主持人帳號";
+    }
+  }
+});
+
+// 手動登入（第一次登入時使用）
+async function loginAdmin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  const message = document.getElementById("adminLoginMessage");
+
+  message.textContent = "登入中……";
+
+  try {
+    await authReady;
+
+    const credential = await signInWithEmailAndPassword(
+      firebaseAuth,
+      email,
+      password
+    );
+
+    if (credential.user.uid !== ADMIN_UID) {
+      await signOut(firebaseAuth);
+      message.textContent = "這個帳號不是主持人帳號";
+      return;
     }
 
-    $("loginBtn").onclick = async () => {
-      try {
-        await signInWithEmailAndPassword(
-          auth,
-          $("email").value.trim(),
-          $("password").value
-        );
-      } catch (error) {
-        message("登入失敗：" + error.message);
-      }
+    document.getElementById("adminLogin").classList.remove("active");
+    document.getElementById("start").classList.add("active");
+
+  } catch (error) {
+    console.error(error);
+    message.textContent = "登入失敗，請檢查帳號與密碼";
+  }
+}
+
+window.loginAdmin = loginAdmin;
+
+  // ===== 進入全螢幕，按 Esc 退出 =====
+
+async function toggleFullscreen() {
+  const game = document.getElementById("game");
+  const button = document.getElementById("fullscreenButton");
+
+  try {
+    if (!document.fullscreenElement) {
+      await game.requestFullscreen();
+      button.style.setProperty("display", "none", "important");
+    } else {
+      await document.exitFullscreen();
+      button.style.removeProperty("display");
+    }
+  } catch (error) {
+    console.error("切換全螢幕失敗：", error);
+  }
+}
+
+window.toggleFullscreen = toggleFullscreen;
+  // ===== 全螢幕時隱藏按鈕，退出後顯示 =====
+document.addEventListener("fullscreenchange", () => {
+  const button = document.getElementById("fullscreenButton");
+
+  if (document.fullscreenElement) {
+    button.style.setProperty("display", "none", "important");
+  } else {
+    button.style.removeProperty("display");
+  }
+});
+  
+  const voteURL = new URL("vote.html", window.location.href).href;
+
+document.getElementById("voteQRCode").src =
+  "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+  encodeURIComponent(voteURL);
+  // ====================================
+  // 基本設定
+  // ====================================
+
+ const storyVideo = document.getElementById("storyVideo");
+
+let videoNextAction = null;
+
+
+function playStoryVideo(filename, nextAction) {
+  hideAllScreens();
+
+  const videoScreen = document.getElementById("videoScreen");
+  videoScreen.classList.add("active");
+
+  videoNextAction = nextAction;
+
+  storyVideo.src = filename;
+  storyVideo.load();
+
+  storyVideo.play().catch(error => {
+    console.error("影片播放失敗：", error);
+
+    document.getElementById("videoTransition")
+      .classList.remove("active");
+
+    alert("影片無法播放：" + error.message);
+  });
+}
+
+
+function finishCurrentVideo() {
+  storyVideo.pause();
+  storyVideo.removeAttribute("src");
+  storyVideo.load();
+
+  const next = videoNextAction;
+  videoNextAction = null;
+
+  if (next) next();
+}
+
+
+// 播放影片時，按空白鍵跳過影片
+document.addEventListener("keydown", (event) => {
+  if (event.code !== "Space" || event.repeat) return;
+
+  const videoScreen = document.getElementById("videoScreen");
+
+  // 只有影片畫面正在顯示時才能跳過
+  if (!videoScreen.classList.contains("active")) return;
+
+  event.preventDefault();
+  finishCurrentVideo();
+});
+
+storyVideo.addEventListener("ended", () => {
+  // 結局影片播放完後，保留最後畫面
+  if (videoNextAction === null) return;
+
+  finishCurrentVideo();
+});
+
+
+function startOpening() {
+
+  // 播放 Start 按鈕音效
+  startButtonSound.currentTime = 0;
+  startButtonSound.play().catch(console.error);
+
+  // 按下 Start 時，自動進入全螢幕
+  const game = document.getElementById("game");
+
+  if (!document.fullscreenElement) {
+    game.requestFullscreen().catch(error => {
+      console.error("無法進入全螢幕：", error);
+    });
+  }
+
+  const transition = document.getElementById("videoTransition");
+
+  if (transition.classList.contains("active")) return;
+
+  // 開始白光漸亮
+  transition.classList.add("active");
+
+  // 白光完全覆蓋後再切換影片
+  setTimeout(() => {
+    const onVideoPlaying = () => {
+      storyVideo.removeEventListener("playing", onVideoPlaying);
+
+      // 影片開始播放後，白光淡出
+      requestAnimationFrame(() => {
+        transition.classList.remove("active");
+      });
     };
 
-    onAuthStateChanged(auth, user => {
-      const isAdmin = user && user.uid === ADMIN_UID;
+    storyVideo.addEventListener("playing", onVideoPlaying);
 
-      $("login").style.display = isAdmin ? "none" : "block";
-      $("panel").style.display = isAdmin ? "block" : "none";
+    playStoryVideo(
+      "https://github.com/hung970127/recording/releases/download/v2.0/1119.final.10.mp4",
+      () => {
+        storyVideo.removeEventListener("playing", onVideoPlaying);
+        transition.classList.remove("active");
+        startGame();
+      }
+    );
+  }, 1500);
+}
+  
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
 
-      if (user && !isAdmin) {
-        message("這個帳號沒有主持人權限。");
-      } else if (isAdmin) {
-        message("主持人登入成功。");
+  ctx.imageSmoothingEnabled = false;
+
+  let gameStarted = false;
+  let animationTime = 0;
+  let selectedSuspect = -1;
+  let currentAudio = null;
+let currentSuspectIndex = -1;
+  
+// 音樂淡入淡出（預設 2 秒）
+const fadeTimers = new WeakMap();
+
+function fadeAudio(audio, from, to, duration = 2000, onComplete = null) {
+  if (!audio) return;
+
+  // 取消同一首音樂正在進行的淡入淡出
+  if (fadeTimers.has(audio)) {
+    clearInterval(fadeTimers.get(audio));
+  }
+
+  const start = performance.now();
+  audio.volume = from;
+
+  const timer = setInterval(() => {
+    const progress = Math.min(
+      (performance.now() - start) / duration, 1
+    );
+
+    audio.volume = Math.max(
+      0,
+      Math.min(1, from + (to - from) * progress)
+    );
+
+    if (progress >= 1) {
+      clearInterval(timer);
+      fadeTimers.delete(audio);
+      if (onComplete) onComplete();
+    }
+  }, 30);
+
+  fadeTimers.set(audio, timer);
+}
+  
+const puzzleMusic = new Audio("music/背景音樂.mp3");
+puzzleMusic.preload = "auto";
+puzzleMusic.loop = true;
+puzzleMusic.volume = 0.3;
+const voteSound = new Audio("music/票數.mp3");
+voteSound.volume = 0.8;
+  const successEndingMusic = new Audio("music/成功結尾音樂.mp3");
+successEndingMusic.preload = "auto";
+successEndingMusic.volume = 1;
+  
+  // Start 按鈕音效
+const startButtonSound = new Audio("music/按鈕.mp3");
+startButtonSound.preload = "auto";
+startButtonSound.volume = 1;
+  
+ // ===== 五分鐘倒數計時 =====
+
+let votingEndsAt = 0;
+  let timeLeft = 300;
+let timerInterval = null;
+let gameOver = false;
+
+function startTimer() {
+  clearInterval(timerInterval);
+
+  timeLeft = 300;
+  gameOver = false;
+
+  const timer = document.getElementById("timer");
+  timer.style.display = "block";
+  timer.classList.remove("warning");
+  timer.textContent = "05:00";
+
+  const endTime = votingEndsAt;
+
+  timerInterval = setInterval(() => {
+    timeLeft = Math.max(
+      0,
+      Math.ceil((endTime - Date.now()) / 1000)
+    );
+
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
+    timer.textContent =
+      String(minutes).padStart(2, "0") + ":" +
+      String(seconds).padStart(2, "0");
+
+    if (timeLeft <= 60) {
+      timer.classList.add("warning");
+    }
+
+    if (timeLeft <= 0) {
+      stopTimer();
+     
+document.getElementById("revealResultsButton").style.display = "none";
+
+get(ref(firebaseDB, "currentSession"))
+  .then(snapshot => {
+    if (!snapshot.exists()) {
+      throw new Error("找不到投票場次");
+    }
+
+    const sessionId = snapshot.val();
+
+    return set(
+      ref(firebaseDB, "sessions/" + sessionId + "/config/status"),
+      "closed"
+    );
+  })
+  .then(() => showVotingResults())
+  .catch(error => {
+    console.error("關閉投票或統計失敗：", error);
+    document.getElementById("resultText").textContent =
+      "投票已結束，但暫時無法取得統計結果。";
+  });
+
+      gameOver = true;
+      gameStarted = false;
+
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        currentSuspectIndex = -1;
       }
 
-      if (!isAdmin) {
-        clearInterval(timerInterval);
-        if (unsubscribe) unsubscribe();
-      }
+      puzzleMusic.pause();
+      hideAllScreens();
+
+      document.getElementById("resultScreen")
+        .classList.add("active");
+document.getElementById("resultText").textContent =
+  "投票結束，正在統計結果……";
+
+timer.style.display = "none";
+
+    }
+  }, 250);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+  
+async function revealResultsEarly() {
+  if (gameOver || !timerInterval) return;
+
+  if (!firebaseAuth.currentUser ||
+      firebaseAuth.currentUser.uid !== ADMIN_UID) {
+    alert("只有主持人可以公布結果");
+    return;
+  }
+
+  if (!endVoteConfirmed) {
+    document.getElementById("endVoteConfirm").classList.add("active");
+    return;
+  }
+
+  endVoteConfirmed = false;
+
+  const button = document.getElementById("revealResultsButton");
+  button.disabled = true;
+  button.textContent = "正在結束投票……";
+
+  try {
+    const sessionSnapshot = await get(
+      ref(firebaseDB, "currentSession")
+    );
+
+    if (!sessionSnapshot.exists()) {
+      throw new Error("找不到投票場次");
+    }
+
+    const sessionId = sessionSnapshot.val();
+
+    await set(
+      ref(firebaseDB, "sessions/" + sessionId + "/config/status"),
+      "closed"
+    );
+
+    gameOver = true;
+    gameStarted = false;
+    stopTimer();
+
+    document.getElementById("timer").style.display = "none";
+    button.style.display = "none";
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+      currentSuspectIndex = -1;
+    }
+
+    puzzleMusic.pause();
+
+    hideAllScreens();
+    document.getElementById("resultScreen").classList.add("active");
+
+    document.getElementById("resultText").textContent =
+      "投票結束，正在統計結果……";
+
+    await showVotingResults();
+
+  } catch (error) {
+    console.error("提前公布結果失敗：", error);
+    alert("無法結束投票，請檢查 Firebase 與網路連線");
+
+    button.disabled = false;
+    button.textContent = "公布結果";
+  }
+}
+
+window.revealResultsEarly = revealResultsEarly;
+  let endVoteConfirmed = false;
+
+function cancelEndVote() {
+  document.getElementById("endVoteConfirm").classList.remove("active");
+  endVoteConfirmed = false;
+}
+
+function confirmEndVote() {
+  document.getElementById("endVoteConfirm").classList.remove("active");
+  endVoteConfirmed = true;
+  revealResultsEarly();
+}
+
+window.cancelEndVote = cancelEndVote;
+window.confirmEndVote = confirmEndVote;
+  
+// ===== 提示畫面按空白鍵公布結果 =====
+document.addEventListener("keydown", (event) => {
+  if (event.code !== "Space" || event.repeat) return;
+
+  const clueScreen = document.getElementById("clueScreen");
+  const transition = document.getElementById("videoTransition");
+
+  // 只有提示畫面顯示、白光過場結束後才能使用
+  if (!clueScreen.classList.contains("active")) return;
+  if (transition.classList.contains("active")) return;
+  if (gameOver || !timerInterval) return;
+
+  event.preventDefault();
+
+  revealResultsEarly();
+});
+  
+async function showVotingResults() {
+  try {
+    const sessionSnapshot = await get(
+      ref(firebaseDB, "currentSession")
+    );
+
+    if (!sessionSnapshot.exists()) {
+      throw new Error("找不到投票場次");
+    }
+
+    const sessionId = sessionSnapshot.val();
+
+    const votesSnapshot = await get(
+      ref(firebaseDB, "sessions/" + sessionId + "/votes")
+    );
+
+    const counts = [0, 0, 0, 0];
+
+    if (votesSnapshot.exists()) {
+      Object.values(votesSnapshot.val()).forEach(vote => {
+        if (Number.isInteger(vote) && vote >= 0 && vote <= 3) {
+          counts[vote]++;
+        }
+      });
+    }
+
+    const total = counts.reduce((sum, count) => sum + count, 0);
+
+    const names = [
+      "徐正庭",
+      "許宸瑋",
+      "周裕軒",
+      "洪昕妤"
+    ];
+
+    const resultCards = document.getElementById("resultCards");
+    const resultTotal = document.getElementById("resultTotal");
+    const resultText = document.getElementById("resultText");
+
+    resultTotal.textContent = `總投票數：${total} 票`;
+    resultText.textContent = "";
+    resultCards.innerHTML = "";
+
+    counts.forEach((count, index) => {
+      const percentage = total === 0
+        ? 0
+        : count / total * 100;
+
+      const card = document.createElement("div");
+      card.className = "result-card";
+
+      card.innerHTML = `
+        <img src="${suspects[index].image}" alt="${names[index]}">
+        <div class="result-name">${names[index]}</div>
+        <div class="result-votes" id="votes-${index}">0 票</div>
+        <div class="result-percent" id="percent-${index}">0.0%</div>
+        <div class="result-bar">
+          <div class="result-bar-fill" id="bar-${index}"></div>
+        </div>
+      `;
+
+      resultCards.appendChild(card);
     });
 
-    $("startBtn").onclick = async () => {
-      if (!auth.currentUser ||
-          auth.currentUser.uid !== ADMIN_UID) return;
+    voteSound.pause();
+voteSound.currentTime = 0;
+voteSound.play().catch(console.error);
+    
+    // 數字動畫：從 0 跑到實際結果
+   const duration = 6000;
+    const startTime = performance.now();
 
-      try {
-        $("startBtn").disabled = true;
-
-        sessionId = "round_" + Date.now();
-
-        const startedAt = Date.now();
-        const endsAt = startedAt + 300000;
-
-        await set(
-          ref(db, "sessions/" + sessionId + "/config"),
-          {
-            startedAt,
-            endsAt,
-            status: "open"
-          }
-        );
-
-        sessionConfig = { startedAt, endsAt, status: "open" };
-
-await set(
-  ref(db, "currentSession"),
-  sessionId
-);
-        
-        $("results").innerHTML = "";
-        $("status").textContent = "投票進行中";
-        $("closeBtn").disabled = false;
-        $("resultBtn").disabled = true;
-
-        if (unsubscribe) unsubscribe();
-
-        unsubscribe = onValue(
-          ref(db, "sessions/" + sessionId + "/config"),
-          snapshot => {
-            sessionConfig = snapshot.val();
-            updateTimer();
-          }
-        );
-
-        clearInterval(timerInterval);
-        timerInterval = setInterval(updateTimer, 250);
-        updateTimer();
-
-        message("已建立場次：" + sessionId);
-      } catch (error) {
-        $("startBtn").disabled = false;
-        message("開始失敗：" + error.message);
-      }
-    };
-
-    function updateTimer() {
-      if (!sessionConfig) return;
-
-      const seconds = Math.max(
-        0,
-        Math.ceil((sessionConfig.endsAt - Date.now()) / 1000)
+    function animateResults(now) {
+      const progress = Math.min(
+        (now - startTime) / duration,
+        1
       );
 
-      $("timer").textContent =
-        String(Math.floor(seconds / 60)).padStart(2, "0") +
-        ":" +
-        String(seconds % 60).padStart(2, "0");
+      // 先快後慢
+      const eased = 1 - Math.pow(1 - progress, 3);
 
-      if (seconds === 0 && sessionConfig.status === "open") {
-        closeVoting();
+      counts.forEach((count, index) => {
+        const percentage = total === 0
+          ? 0
+          : count / total * 100;
+
+        const currentVotes = Math.round(count * eased);
+        const currentPercent = percentage * eased;
+
+        document.getElementById(`votes-${index}`).textContent =
+          `${currentVotes} 票`;
+
+        document.getElementById(`percent-${index}`).textContent =
+          `${currentPercent.toFixed(1)}%`;
+
+        document.getElementById(`bar-${index}`).style.width =
+          `${currentPercent}%`;
+      });
+
+      if (progress < 1) {
+        requestAnimationFrame(animateResults);
       }
     }
 
-    async function closeVoting() {
-      if (!sessionId || !sessionConfig ||
-          sessionConfig.status !== "open") return;
+    requestAnimationFrame(animateResults);
 
-      try {
-        await set(
-          ref(db, "sessions/" + sessionId + "/config"),
-          {
-            ...sessionConfig,
-            status: "closed"
-          }
-        );
+ 
+    // 計算最終投票結果，但先不公布
+    const maxVotes = Math.max(...counts);
 
-        sessionConfig.status = "closed";
-        $("status").textContent = "投票已結束";
-        $("closeBtn").disabled = true;
-        $("resultBtn").disabled = false;
-        $("startBtn").disabled = false;
+    if (total === 0) {
+      resultText.textContent = "本次沒有收到投票";
+    } else {
+const winners = counts
+  .map((votes, index) =>
+    votes === maxVotes ? names[index] : null
+  )
+  .filter(name => name !== null);
 
-        clearInterval(timerInterval);
-      } catch (error) {
-        message("關閉失敗：" + error.message);
+if (winners.length === 1) {
+  resultText.textContent =
+    `${winners[0]} 獲得最高票`;
+} else {
+  resultText.textContent =
+    `${winners.join("、")} 並列最高票`;
+}
+    }
+
+// ===== 根據投票結果決定結局 =====
+
+// 取得最高票數
+const maxCount = Math.max(...counts);
+
+// 找出所有最高票者
+const winnerIndexes = counts
+  .map((count, index) =>
+    count === maxCount ? index : -1
+  )
+  .filter(index => index !== -1);
+
+// 判斷是否成功
+const isWin =
+  total > 0 &&
+  winnerIndexes.length === 1 &&
+  winnerIndexes[0] === 0;
+
+// 決定懸念畫面顯示的名字
+let hackerName;
+
+if (total === 0) {
+  hackerName = "沒有人";
+} else if (winnerIndexes.length === 1) {
+  hackerName = names[winnerIndexes[0]];
+} else {
+  hackerName = winnerIndexes
+    .map(index => names[index])
+    .join("、");
+}
+
+
+// 等待票數動畫結束
+setTimeout(() => {
+
+  voteSound.pause();
+  voteSound.currentTime = 0;
+
+  // 顯示懸念畫面
+  hideAllScreens();
+
+ document.getElementById("hackerQuestion").textContent =
+  `${hackerName}是駭客嗎？`;
+
+  document.getElementById("hackerRevealScreen")
+    .classList.add("active");
+
+  // 播放結局影片
+function playEndingVideo() {
+  const endingVideo = isWin
+    ? "https://github.com/hung970127/recording/releases/download/v1.2/default.mp4"
+    : "https://github.com/hung970127/recording/releases/download/v1.9/end.final2.mp4";
+
+  // 成功結局：影片與音樂同時開始
+  if (isWin) {
+    successEndingMusic.pause();
+    successEndingMusic.currentTime = 0;
+    successEndingMusic.play().catch(console.error);
+  }
+
+  playStoryVideo(endingVideo, null);
+
+  // 影片結束後停留在最後一幀
+  storyVideo.addEventListener("ended", function stayOnLastFrame() {
+    storyVideo.currentTime = Math.max(0, storyVideo.duration - 0.05);
+    storyVideo.pause();
+  }, { once: true });
+}
+
+if (isWin) {
+
+  // ===== 成功結局 =====
+  // 等待 20 秒後揭曉真正的駭客
+  setTimeout(() => {
+
+    // 更改畫面文字
+    document.getElementById("hackerQuestion").textContent =
+      "徐正庭是駭客";
+
+    // 播放跳舞音樂
+    const revealMusic = new Audio("music/跳舞.mp3");
+    revealMusic.volume = 1;
+
+    // 音樂結束後播放成功結局影片
+    revealMusic.addEventListener(
+      "ended",
+      playEndingVideo,
+      { once: true }
+    );
+
+    revealMusic.play().catch(error => {
+      console.error("跳舞音樂播放失敗：", error);
+      playEndingVideo();
+    });
+
+  }, 20000);
+
+} else {
+
+  // ===== 失敗結局 =====
+  // 停留在「XXX是駭客嗎？」畫面，等待空白鍵
+
+  function startFailureVideo(event) {
+    if (event.code !== "Space" || event.repeat) return;
+
+    event.preventDefault();
+
+    document.removeEventListener(
+      "keydown",
+      startFailureVideo
+    );
+
+    playEndingVideo();
+  }
+
+  document.addEventListener(
+    "keydown",
+    startFailureVideo
+  );
+
+}
+
+}, 11000);
+
+
+  } catch (error) {
+    console.error("讀取投票結果失敗：", error);
+
+    document.getElementById("resultText").textContent =
+      "投票已結束，但暫時無法取得統計結果。";
+  }
+}
+
+ 
+function showFinalResult() {
+  voteSound.pause();
+  voteSound.currentTime = 0;
+
+  hideAllScreens();
+
+  const finalScreen =
+    document.getElementById("finalResultScreen");
+
+  finalScreen.classList.add("active");
+
+  const resultText =
+    document.getElementById("resultText");
+
+  resultText.style.animation = "none";
+  void resultText.offsetWidth;
+  resultText.style.animation = "resultReveal 0.7s ease-out";
+
+}
+
+window.showFinalResult = showFinalResult;
+
+
+  // ====================================
+  // 畫圖工具
+  // ====================================
+
+  function rectangle(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      Math.round(x),
+      Math.round(y),
+      w,
+      h
+    );
+  }
+
+  function text(str, x, y, size, color) {
+    ctx.fillStyle = color;
+    ctx.font = size + "px monospace";
+    ctx.fillText(str, x, y);
+  }
+
+  const computerScreenImage = new Image();
+computerScreenImage.src = "images/電腦畫面.jpg";
+  
+  // ====================================
+  // 繪製 2D 宿舍
+  // ====================================
+
+function drawRoom() {
+
+  // ===== 暖色宿舍配色表 =====
+  const warmColors = {
+    // 牆壁與地板
+    "#111827": "#322418",
+    "#111b2b": "#6b4b30",
+    "#344458": "#8c6644",
+    "#1c2b3d": "#785538",
+    "#1b2839": "#59402b",
+    "#101a29": "#39281c",
+    "#142132": "#493321",
+    "#26364a": "#745238",
+    "#202f42": "#62452f",
+
+    // 床底陰影
+    "#111b29": "#30241b",
+    "#0b1420": "#251b15",
+    "#1b2938": "#493525",
+    "#253346": "#5b422e",
+
+    // 金屬床架
+    "#66727b": "#66615a",
+    "#b0bac0": "#aaa095",
+    "#394751": "#3f3c38",
+
+    // 木製床板與護欄
+    "#997653": "#a67542",
+    "#d4b185": "#d7a66b",
+    "#62472f": "#654026",
+    "#b58d62": "#bb8b57",
+    "#493426": "#50321f",
+    "#bd9567": "#d4a36a",
+    "#806044": "#95633c",
+    "#30251f": "#352217",
+    "#a27b52": "#b88450",
+    "#4e3828": "#5b3b24",
+
+    // 床墊
+    "#536477": "#716c61",
+    "#b0b9c1": "#c9bdab",
+    "#8c9baa": "#aa9d8b",
+    "#657588": "#756d62",
+    "#a8b5bd": "#c7b9a6",
+
+    // 枕頭
+    "#6b7885": "#a89b87",
+    "#d3d4cf": "#e4d6bb",
+    "#f0ece1": "#f5e8cf",
+    "#fffaf0": "#fff2da",
+    "#c6c7bf": "#cbbb9e",
+
+    // 左床藍灰色棉被
+    "#526f9b": "#526577",
+    "#829dc0": "#8798a4",
+    "#344f76": "#344858",
+
+    // 右床橄欖綠棉被
+    "#4d827d": "#657457",
+    "#7aafa4": "#9aa17d",
+    "#305b59": "#424e3b",
+
+    // 書桌木材
+    "#785439": "#80502c",
+    "#a47a50": "#ae7844",
+    "#d6ae79": "#dfad70",
+    "#493222": "#4c301c",
+    "#c39663": "#d3a06b",
+    "#765135": "#754b2c",
+    "#dfb47f": "#e6b783",
+    "#634831": "#765033",
+    "#b88a5b": "#c48c54",
+    "#493524": "#543621",
+
+    // 書桌抽屜
+    "#47352c": "#513721",
+    "#84634c": "#906440",
+    "#a27b5c": "#b58455",
+    "#d0a176": "#ddb080",
+    "#533b2d": "#624027",
+    "#b78a65": "#c99562",
+    "#614633": "#6b482b",
+
+    // 椅子：暖灰色
+    "#303d49": "#45423e",
+    "#657787": "#77736b",
+    "#455b6d": "#59564f",
+    "#8194a3": "#9b9487",
+    "#718698": "#888276",
+    "#283744": "#383632",
+    "#293946": "#393733",
+
+    // 衣櫃
+    "#493627": "#684225",
+    "#927052": "#aa7848",
+    "#60452f": "#80512e",
+    "#d4aa79": "#e0aa6b",
+    "#684b36": "#79502e",
+    "#aa815c": "#bd8953",
+    "#c69a6b": "#dda66b",
+    "#35271e": "#3d291b",
+
+    // 中央平台與樓梯
+    "#533923": "#6a4226",
+    "#d0a271": "#e1ad70",
+    "#987049": "#ac7845",
+    "#39291c": "#432b1b",
+    "#49301e": "#60391f",
+    "#97714d": "#aa7542",
+    "#a17a53": "#b7824d",
+    "#513725": "#59371f",
+    "#69472d": "#78502d",
+    "#c99b68": "#dba166",
+    "#eac08a": "#f2c487",
+    "#bd9061": "#cb9459",
+    "#795639": "#81552f",
+    "#4c301d": "#57341e",
+    "#ae8052": "#c18a50",
+    "#bc8c5c": "#d49a5c",
+
+    // 電腦螢幕：保留深色科技感
+    "#080f19": "#191916",
+    "#2b5265": "#35483e",
+    "#17495b": "#253e37",
+    "#07101b": "#151915",
+    "#31505a": "#35483c",
+    "#073b3c": "#18362c"
+  };
+
+  // 所有原本的矩形自動套用暖色
+  const r = (x, y, w, h, c) =>
+    rectangle(x, y, w, h, warmColors[c.toLowerCase()] || c);
+
+
+  // ===== 背景 =====
+  r(0,0,960,540,"#111827");
+
+  // 牆壁
+  r(0,0,960,115,"#111b2b");
+  r(0,110,960,8,"#344458");
+  r(0,30,960,2,"#1c2b3d");
+  r(0,75,960,2,"#1c2b3d");
+
+  // 地板：深色木板
+  r(0,118,960,422,"#1b2839");
+
+  for(let y=118;y<540;y+=38){
+    r(0,y,960,2,"#101a29");
+
+    for(let x=0;x<960;x+=125){
+      const offset = Math.floor(y/38)%2*62;
+      r(x+offset,y+2,2,35,"#142132");
+      r(x+offset+8,y+8,72,1,"#26364a");
+      r(x+offset+25,y+25,55,1,"#202f42");
+    }
+  }
+
+  // ===== 繪圖工具 =====
+  function line(x1,y1,x2,y2,color,width=2){
+    ctx.strokeStyle=color;
+    ctx.lineWidth=width;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+  }
+
+  function wood(x,y,w,h){
+    r(x,y,w,h,"#997653");
+    r(x,y,w,4,"#d4b185");
+    r(x,y+h-5,w,5,"#62472f");
+
+    for(let i=0;i<3;i++){
+      const yy=y+10+i*9;
+      if(yy<y+h-6){
+        r(x+12,yy,w-24,1,"#b58d62");
+      }
+    }
+  }
+
+  function metal(x,y,w,h){
+    r(x,y,w,h,"#66727b");
+    r(x+2,y,3,h,"#b0bac0");
+    r(x+w-3,y,3,h,"#394751");
+  }
+
+  
+  // ===== 精緻化左右上舖 V2 =====
+  function bunk(x, mirror = false) {
+
+    // 床下空間：保留書桌位置
+    r(x + 13, 222, 254, 178, "#111b29");
+    r(x + 18, 239, 244, 5, "#0b1420");
+
+    // 牆面與床底的環境陰影
+    r(x + 19, 245, 235, 3, "#1b2938");
+    r(x + 22, 250, 220, 2, "#253346");
+
+    // 四根金屬支柱
+    metal(x, 113, 14, 301);
+    metal(x + 266, 113, 14, 301);
+
+    // 支柱固定螺絲
+    for (const px of [x + 5, x + 271]) {
+      for (const py of [128, 224, 317, 400]) {
+        r(px, py, 4, 4, "#d1d5d2");
+        r(px + 1, py + 1, 2, 2, "#53616b");
       }
     }
 
-    $("closeBtn").onclick = async () => {
-      if (sessionConfig &&
-          Date.now() < sessionConfig.endsAt) {
-        message("五分鐘尚未結束，不能提前公布。");
-        return;
-      }
-      await closeVoting();
+    // 床板主體：厚木板
+    r(x + 12, 211, 255, 25, "#493426");
+    r(x + 12, 211, 255, 6, "#bd9567");
+    r(x + 12, 218, 255, 12, "#806044");
+    r(x + 12, 231, 255, 5, "#30251f");
+
+    // 床板木紋
+    for (let i = 0; i < 5; i++) {
+      r(x + 24 + i * 48, 222, 29, 2, "#a27b52");
+      r(x + 35 + i * 45, 228, 18, 1, "#4e3828");
+    }
+
+    // 床墊底層
+    r(x + 18, 158, 244, 55, "#536477");
+    r(x + 20, 158, 240, 7, "#b0b9c1");
+    r(x + 20, 165, 240, 40, "#8c9baa");
+    r(x + 20, 204, 240, 7, "#657588");
+
+    // 床單的細小摺痕
+    for (let i = 0; i < 5; i++) {
+      r(x + 31 + i * 45, 198, 22, 2, "#a8b5bd");
+    }
+
+    // 枕頭：左右鏡像
+    const pillowX = mirror ? x + 193 : x + 27;
+
+    // 枕頭陰影
+    r(pillowX - 2, 170, 56, 34, "#6b7885");
+
+    // 枕頭主體
+    r(pillowX, 166, 52, 33, "#d3d4cf");
+    r(pillowX + 4, 169, 44, 26, "#f0ece1");
+
+    // 枕頭亮面
+    r(pillowX + 8, 171, 32, 3, "#fffaf0");
+    r(pillowX + 7, 190, 37, 2, "#c6c7bf");
+
+    // 枕頭四角的縫線
+    r(pillowX + 3, 174, 2, 16, "#b5b6b0");
+    r(pillowX + 47, 174, 2, 16, "#b5b6b0");
+
+    // 棉被：兩張床使用不同色系
+    const blanketX = mirror ? x + 26 : x + 85;
+    const blanketColor = mirror ? "#4d827d" : "#526f9b";
+    const blanketLight = mirror ? "#7aafa4" : "#829dc0";
+    const blanketDark = mirror ? "#305b59" : "#344f76";
+
+    // 棉被底部陰影
+    r(blanketX + 3, 176, 151, 32, blanketDark);
+
+    // 棉被本體
+    r(blanketX, 168, 154, 34, blanketColor);
+
+    // 翻折的被口
+    r(blanketX, 168, 154, 9, blanketLight);
+    r(blanketX + 5, 175, 144, 3, "#b5c5c5");
+
+    // 自然摺痕
+    r(blanketX + 17, 184, 108, 3, blanketLight);
+    r(blanketX + 29, 192, 94, 2, blanketDark);
+    r(blanketX + 12, 198, 124, 3, blanketDark);
+
+    // 棉被末端下垂的布料
+    const foldX = mirror ? blanketX : blanketX + 142;
+    r(foldX, 181, 12, 27, blanketDark);
+    r(foldX + 2, 184, 3, 18, blanketLight);
+
+   
+   
+    // ===== 左右對稱的木製床鋪護欄 V3 =====
+
+    // 左床右側留入口，右床左側留入口
+    const railStart = mirror ? x + 76 : x + 12;
+    const railWidth = 191;
+
+    // 護欄上橫樑
+    wood(railStart, 133, railWidth, 11);
+
+    // 護欄下橫樑
+    wood(railStart, 199, railWidth, 12);
+
+    // 等距排列五根直立木條
+    for (let i = 0; i < 5; i++) {
+      const px = railStart + 19 + i * 38;
+
+      // 木條陰影
+      r(px, 144, 9, 55, "#62442d");
+
+      // 木條正面
+      r(px + 2, 145, 5, 52, "#b88c5e");
+
+      // 木條高光
+      r(px + 3, 146, 2, 49, "#e0b483");
+    }
+
+    // 護欄外側主柱
+    const outerX = mirror ? x + 254 : x + 12;
+    wood(outerX, 121, 13, 94);
+
+    // 靠樓梯的護欄末端柱
+    const innerX = mirror ? x + 76 : x + 190;
+    wood(innerX, 132, 11, 79);
+
+
+    // 床架下方支撐橫樑
+    r(x + 15, 236, 250, 9, "#483b30");
+    r(x + 15, 236, 250, 3, "#8d7254");
+
+    // 床底加固斜撐
+    ctx.strokeStyle = "#4a535c";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(x + 14, 244);
+    ctx.lineTo(x + 49, 279);
+    ctx.moveTo(x + 265, 244);
+    ctx.lineTo(x + 230, 279);
+    ctx.stroke();
+
+    // 床架頂部小型金屬接頭
+    r(x, 110, 14, 7, "#a5b1b9");
+    r(x + 266, 110, 14, 7, "#a5b1b9");
+  }
+
+// 左床：向中央加寬 30px
+ctx.save();
+ctx.translate(90, 0);
+ctx.scale(310 / 280, 1);
+bunk(0, false);
+ctx.restore();
+
+// 右床：向中央加寬 30px
+ctx.save();
+ctx.translate(560, 0);
+ctx.scale(310 / 280, 1);
+bunk(0, true);
+ctx.restore();
+
+  // ===== 精緻像素風宿舍書桌 V3 =====
+  function desk(x) {
+
+    // ===== 桌後牆面陰影 =====
+    r(x + 8, 295, 220, 9, "#111a27");
+
+    // ===== 桌面 =====
+    // 桌面底部陰影
+    r(x - 3, 321, 238, 13, "#30251f");
+
+    // 厚實木製桌板
+    r(x - 5, 307, 240, 20, "#785439");
+
+    // 桌板正面
+    r(x - 5, 311, 240, 11, "#a47a50");
+
+    // 桌面上緣高光
+    r(x - 5, 307, 240, 5, "#d6ae79");
+
+    // 桌板下緣
+    r(x - 5, 323, 240, 4, "#493222");
+
+    // 木紋
+    r(x + 13, 314, 69, 2, "#c39663");
+    r(x + 108, 318, 82, 2, "#765135");
+    r(x + 183, 313, 35, 1, "#dfb47f");
+
+    // ===== 桌面後方擋板 =====
+    r(x + 1, 292, 228, 15, "#634831");
+    r(x + 1, 292, 228, 4, "#b88a5b");
+    r(x + 1, 302, 228, 5, "#493524");
+
+    // ===== 左右桌腳 =====
+    for (const legX of [x + 6, x + 211]) {
+      r(legX, 327, 15, 89, "#4b3427");
+      r(legX + 3, 329, 9, 82, "#98704b");
+      r(legX + 4, 330, 3, 78, "#c3996b");
+
+      // 金屬腳墊
+      r(legX - 1, 411, 17, 7, "#414952");
+      r(legX + 2, 412, 11, 2, "#a1a9ab");
+    }
+
+    // ===== 抽屜櫃 =====
+    r(x + 27, 330, 80, 75, "#47352c");
+    r(x + 31, 333, 72, 68, "#84634c");
+
+    // 抽屜分隔
+    r(x + 35, 338, 64, 26, "#a27b5c");
+    r(x + 35, 369, 64, 26, "#a27b5c");
+
+    // 抽屜立體邊框
+    for (const yy of [338, 369]) {
+      r(x + 35, yy, 64, 3, "#d0a176");
+      r(x + 35, yy + 23, 64, 3, "#533b2d");
+      r(x + 35, yy, 3, 26, "#b78a65");
+      r(x + 96, yy, 3, 26, "#614633");
+
+      // 金屬把手
+      r(x + 57, yy + 11, 20, 6, "#41484b");
+      r(x + 59, yy + 11, 16, 3, "#c3c8c3");
+      r(x + 63, yy + 14, 8, 2, "#707b80");
+    }
+
+    // 抽屜木紋
+    r(x + 43, 345, 12, 1, "#d6a77a");
+    r(x + 80, 355, 12, 1, "#6d4b36");
+    r(x + 43, 377, 13, 1, "#d6a77a");
+
+    // ===== 桌底橫向支架 =====
+    r(x + 108, 338, 100, 7, "#4d382c");
+    r(x + 111, 339, 94, 2, "#9d7756");
+
+    // ===== 椅子陰影 =====
+    r(x + 128, 417, 79, 7, "#101923");
+
+    // ===== 椅背 =====
+    r(x + 138, 329, 56, 43, "#303d49");
+    r(x + 142, 332, 48, 36, "#657787");
+    r(x + 146, 336, 40, 28, "#455b6d");
+
+    // 椅背布料亮面
+    r(x + 149, 338, 31, 3, "#8194a3");
+    r(x + 150, 345, 3, 15, "#718698");
+
+    // 椅背側面
+    r(x + 138, 334, 5, 34, "#283744");
+    r(x + 190, 334, 4, 34, "#293946");
+
+    // ===== 椅面 =====
+    r(x + 132, 369, 68, 13, "#303b46");
+    r(x + 135, 368, 62, 8, "#718394");
+    r(x + 140, 369, 51, 3, "#9aa9b3");
+    r(x + 135, 378, 62, 4, "#27333f");
+
+    // ===== 椅腳 =====
+    for (const legX of [x + 141, x + 185]) {
+      r(legX, 382, 8, 40, "#303b46");
+      r(legX + 2, 384, 3, 34, "#7a8995");
+      r(legX - 2, 418, 13, 5, "#1e2934");
+    }
+
+    // 椅腳橫向固定桿
+    r(x + 149, 402, 36, 5, "#414e59");
+    r(x + 151, 403, 32, 2, "#82919a");
+  }
+
+// 左右書桌縮短，騰出衣櫃空間
+ctx.save();
+ctx.translate(184, 0);
+ctx.scale(0.72, 1);
+desk(0);
+ctx.restore();
+
+ctx.save();
+ctx.translate(575, 0);
+ctx.scale(0.72, 1);
+desk(0);
+ctx.restore();
+
+  // ===== 左側書桌電腦 =====
+  r(222, 251, 86, 50, "#080f19");
+  r(227, 256, 76, 40, "#2b5265");
+  r(232, 261, 66, 30, "#17495b");
+
+  // 螢幕內容
+  r(240, 268, 34, 2, "#69c7d1");
+  r(240, 275, 48, 2, "#39899b");
+  r(240, 282, 28, 2, "#39899b");
+
+  // 螢幕支架及底座
+  r(259, 301, 11, 5, "#59636e");
+  r(244, 305, 42, 3, "#434b57");
+
+// ===== 右側駭客電腦 =====
+
+// 電腦外框
+r(613, 251, 92, 50, "#07101b");
+
+// 螢幕背景
+r(618, 256, 82, 40, "#31505a");
+
+// 顯示電腦畫面.jpg
+if (computerScreenImage.complete && computerScreenImage.naturalWidth > 0) {
+  ctx.drawImage(computerScreenImage, 618, 256, 82, 40);
+}
+
+// 螢幕支架及底座
+r(653, 301, 11, 5, "#4c5a61");
+r(638, 305, 42, 3, "#3c4853");
+
+  // ===== 右側桌燈 =====
+  r(720, 279, 6, 28, "#8b8d89");
+  r(708, 267, 30, 13, "#c4a36b");
+  r(713, 280, 20, 3, "#f2cf91");
+
+ 
+  // ===== 左右床底木製衣櫃 =====
+  function wardrobe(x) {
+
+    // 衣櫃背面陰影
+    r(x + 4, 249, 66, 165, "#101823");
+
+    // 衣櫃主體
+    r(x, 245, 68, 164, "#493627");
+    r(x + 4, 249, 60, 155, "#927052");
+
+    // 頂板
+    r(x - 2, 242, 72, 9, "#60452f");
+    r(x, 242, 68, 3, "#d4aa79");
+
+    // 左門
+    r(x + 7, 255, 25, 138, "#684b36");
+    r(x + 10, 258, 19, 132, "#aa815c");
+    r(x + 12, 261, 2, 124, "#c69a6b");
+
+    // 右門
+    r(x + 36, 255, 25, 138, "#684b36");
+    r(x + 39, 258, 19, 132, "#aa815c");
+    r(x + 41, 261, 2, 124, "#c69a6b");
+
+    // 中央門縫
+    r(x + 32, 255, 4, 138, "#35271e");
+
+    // 金屬門把
+    r(x + 25, 313, 4, 18, "#41464a");
+    r(x + 26, 315, 2, 14, "#d7d0bd");
+
+    r(x + 39, 313, 4, 18, "#41464a");
+    r(x + 40, 315, 2, 14, "#d7d0bd");
+
+    // 底座
+    r(x, 395, 68, 10, "#503927");
+    r(x, 395, 68, 3, "#b78b60");
+
+    // 櫃腳
+    r(x + 5, 405, 11, 8, "#30251d");
+    r(x + 52, 405, 11, 8, "#30251d");
+  }
+
+  // 左床下方衣櫃
+  wardrobe(104);
+
+  // 右床下方衣櫃
+  wardrobe(754);
+
+ 
+  // ===== 加寬床架後的中央平台 =====
+
+  const stairCX = 463;
+  const platformY = 211;
+
+  // 平台後方陰影
+  r(400, 222, 127, 24, "#17202b");
+
+  // 平台主體：連接左右床板
+  r(392, platformY, 143, 24, "#533923");
+  r(392, platformY, 143, 6, "#d0a271");
+  r(392, platformY + 6, 143, 13, "#987049");
+  r(392, platformY + 19, 143, 5, "#39291c");
+
+  // 木板接縫
+  for (let x = 404; x < 527; x += 26) {
+    r(x, 217, 2, 12, "#725033");
+    r(x + 5, 219, 15, 1, "#c39a69");
+  }
+
+  // 平台左右支撐
+  r(397, 235, 10, 37, "#503722");
+  r(399, 236, 3, 32, "#a77d51");
+
+  r(520, 235, 10, 37, "#503722");
+  r(522, 236, 3, 32, "#a77d51");
+
+  // ===== 窄版五階木樓梯：無扶手 =====
+
+  const stairCenterX = 463;
+
+  // 樓梯後方主體
+  ctx.fillStyle = "#49301e";
+  ctx.beginPath();
+  ctx.moveTo(410, 235);
+  ctx.lineTo(516, 235);
+  ctx.lineTo(524, 411);
+  ctx.lineTo(402, 411);
+  ctx.closePath();
+  ctx.fill();
+
+  // 五階踏板
+  const steps = [
+    { y: 240, w: 100 },
+    { y: 274, w: 104 },
+    { y: 308, w: 108 },
+    { y: 342, w: 112 },
+    { y: 376, w: 116 }
+  ];
+
+  steps.forEach((step, i) => {
+    const x = stairCenterX - step.w / 2;
+    const y = step.y;
+    const w = step.w;
+
+    // 階梯立面
+    r(x, y + 8, w, 31,
+      i % 2 === 0 ? "#97714d" : "#a17a53");
+
+    // 底部陰影
+    r(x, y + 34, w, 5, "#513725");
+
+    // 踏板厚度
+    r(x - 3, y + 7, w + 6, 7, "#69472d");
+
+    // 踏板上表面
+    r(x - 3, y, w + 6, 9, "#c99b68");
+
+    // 高光
+    r(x - 2, y + 1, w + 4, 3, "#eac08a");
+
+    // 木紋
+    r(x + 10, y + 20, 28, 2, "#bd9061");
+    r(x + w - 42, y + 27, 27, 2, "#795639");
+  });
+
+  // ===== 左右樓梯側板（不是扶手） =====
+  ctx.lineCap = "square";
+
+  ctx.strokeStyle = "#4c301d";
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.moveTo(410, 236);
+  ctx.lineTo(402, 411);
+  ctx.moveTo(516, 236);
+  ctx.lineTo(524, 411);
+  ctx.stroke();
+
+  // 側板木質高光
+  ctx.strokeStyle = "#ae8052";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(410, 236);
+  ctx.lineTo(402, 411);
+  ctx.moveTo(516, 236);
+  ctx.lineTo(524, 411);
+  ctx.stroke();
+
+  // ===== 樓梯與地板交接 =====
+  r(395, 409, 136, 8, "#49301f");
+  r(399, 409, 128, 3, "#bc8c5c");
+  }
+  
+  // ====================================
+  // 主角
+  // ====================================
+
+
+  // ====================================
+  // 主角：坐在椅子上，只有背影
+  // ====================================
+
+  const player = {
+    x: 669,
+    y: 308,
+    state: "seated"
+  };
+
+  function drawPlayer() {
+    const x = Math.round(player.x);
+    const y = Math.round(player.y);
+
+    const r = (dx, dy, w, h, color) => {
+      rectangle(x + dx, y + dy, w, h, color);
     };
 
-    $("resultBtn").onclick = async () => {
-      if (!sessionId || !sessionConfig ||
-          sessionConfig.status !== "closed" ||
-          Date.now() < sessionConfig.endsAt) {
-        message("投票尚未正式結束。");
-        return;
-      }
+    // ===== 椅背 =====
+    r(-5, 24, 55, 37, "#363b3c");
+    r(-2, 26, 49, 31, "#77736b");
+    r(2, 29, 41, 25, "#59564f");
 
-      try {
-        const snapshot = await get(
-          ref(db, "sessions/" + sessionId + "/votes")
-        );
+      // ===== 坐姿：雙腿收在椅面下方 =====
+    // 大腿被椅面遮住，只露出一小段褲管
+    r(8, 63, 14, 9, "#39434c");
+    r(27, 63, 14, 9, "#39434c");
 
-        const votes = snapshot.val() || {};
-        const counts = [0, 0, 0, 0];
+    // 鞋尖微微露出
+    r(7, 70, 16, 4, "#292c34");
+    r(26, 70, 16, 4, "#292c34");
 
-        Object.values(votes).forEach(index => {
-          if (Number.isInteger(index) &&
-              index >= 0 && index < 4) {
-            counts[index]++;
-          }
-        });
+    // ===== 左手臂 =====
+    r(-3, 29, 10, 26, "#536c60");
+    r(-1, 45, 8, 13, "#e0ad90");
 
-        const total = counts.reduce((a, b) => a + b, 0);
+    // ===== 右手臂 =====
+    r(40, 29, 10, 26, "#536c60");
+    r(42, 45, 8, 13, "#e0ad90");
 
-        $("results").innerHTML = counts.map((count, index) => {
-          const percentage = total
-            ? (count / total * 100).toFixed(1)
-            : "0.0";
+    // ===== 灰綠色寬鬆上衣 =====
+    r(5, 27, 36, 33, "#43594f");
+    r(8, 29, 30, 28, "#718a78");
+    r(12, 32, 23, 23, "#849b89");
 
-          return `<div class="result">
-            嫌疑犯 ${index + 1}：
-            ${count} 票（${percentage}%）
-          </div>`;
-        }).join("");
+    // 衣服陰影
+    r(13, 40, 4, 12, "#6a8272");
+    r(27, 45, 8, 2, "#647c6c");
+    r(8, 56, 31, 5, "#43594f");
 
-        message("共收到 " + total + " 張選票。");
-      } catch (error) {
-        message("讀取票數失敗：" + error.message);
-      }
+    // ===== 脖子與衣領 =====
+    r(17, 24, 14, 8, "#d5a086");
+    r(14, 29, 20, 5, "#40574d");
+
+    // ===== 可愛的圓頭背影 =====
+    // 完全不畫五官
+
+    // 頭髮主體
+    r(10, 3, 29, 24, "#242630");
+    r(7, 9, 36, 17, "#2c2e3a");
+
+    // 頭頂蓬鬆碎髮
+    r(12, 1, 24, 7, "#343643");
+    r(16, 0, 17, 5, "#41414d");
+
+    // 後腦勺
+    r(10, 17, 33, 14, "#2b2d38");
+
+    // 左側中長髮
+    r(13, 25, 9, 11, "#292b35");
+
+    // 右側中長髮
+    r(30, 25, 10, 10, "#292b35");
+
+    // 頭髮高光
+    r(16, 7, 6, 2, "#555361");
+    r(25, 5, 7, 2, "#50505b");
+
+    // ===== 金黃色髮尾 =====
+    // 左側
+    r(11, 29, 8, 4, "#927348");
+    r(13, 33, 8, 4, "#d0a76b");
+
+    // 右側
+    r(31, 29, 9, 4, "#98774d");
+    r(32, 33, 8, 4, "#d0a76b");
+
+    // 髮尾亮面
+    r(15, 36, 5, 2, "#e1be85");
+    r(34, 36, 5, 2, "#e1be85");
+
+      // ===== 椅背前景 =====
+    // 遮住主角腰部，讓人物確實坐在椅子裡
+    r(-6, 40, 57, 30, "#363b3c");
+    r(-2, 42, 49, 25, "#77736b");
+    r(2, 45, 41, 19, "#59564f");
+
+    // 椅背上緣
+    r(-2, 40, 49, 3, "#9b9487");
+
+    // 左右邊框
+    r(-6, 40, 5, 30, "#303d49");
+    r(47, 40, 5, 30, "#303d49");
+  }
+  
+  // ====================================
+  // 開始遊戲
+  // ====================================
+
+  function hideAllScreens() {
+    document.querySelectorAll(".screen").forEach(
+      screen => screen.classList.remove("active")
+    );
+  }
+
+
+
+let transitionStart = 0;
+let clueShown = false;
+let seatedSceneTimer = null;
+
+function startGame() {
+  hideAllScreens();
+
+  preloadSuspectMusic();
+
+  gameStarted = false;
+  animationTime = 0;
+  clueShown = false;
+
+  player.x = 669;
+  player.y = 308;
+  player.state = "seated";
+
+  if (seatedSceneTimer !== null) {
+    clearTimeout(seatedSceneTimer);
+  }
+
+  const flash = document.getElementById("flash");
+  flash.classList.remove("active");
+
+  transitionStart = performance.now();
+  void flash.offsetWidth;
+  flash.classList.add("active");
+
+  canvas.style.opacity = "1";
+
+
+  // 進入宿舍後，播放駭客講話
+  const hackerVoice = new Audio("music/駭客講話.mp3");
+
+  // 音檔播完後才顯示提示
+  hackerVoice.addEventListener("ended", () => {
+    if (gameOver) return;
+
+    clueShown = true;
+    showClues();
+  }, { once: true });
+
+  // 進入宿舍後等待 3 秒再開始播放
+  seatedSceneTimer = setTimeout(() => {
+    if (gameOver) return;
+
+    hackerVoice.play().catch(error => {
+      console.error("駭客講話播放失敗：", error);
+    });
+  }, 3000);
+
+}
+
+// 主角不再走路
+function updatePlayer() {
+  // 固定坐姿，不更新位置
+}
+
+
+  // ====================================
+  // 同時顯示兩個線索
+  // ====================================
+
+
+async function showClues() {
+  if (gameOver) return;
+
+  if (!firebaseAuth.currentUser ||
+      firebaseAuth.currentUser.uid !== ADMIN_UID) {
+    alert("請先登入主持人帳號");
+    return;
+  }
+
+  gameStarted = false;
+
+  const sessionId = "round_" + Date.now();
+  const startedAt = Date.now();
+  const endsAt = startedAt + 300000;
+
+  votingEndsAt = endsAt;
+
+  try {
+    // 建立五分鐘投票場次
+    await set(ref(firebaseDB, "sessions/" + sessionId + "/config"), {
+      startedAt,
+      endsAt,
+      status: "open"
+    });
+
+    // 更新目前投票場次
+    await set(ref(firebaseDB, "currentSession"), sessionId);
+
+   
+        // ===== 白光過場進入提示頁面 =====
+    const transition = document.getElementById("videoTransition");
+    const timer = document.getElementById("timer");
+
+    // 過場期間隱藏計時器及公布結果按鈕
+    timer.style.display = "none";
+    document.getElementById("revealResultsButton").style.display = "none";
+
+    // 白光逐漸覆蓋畫面
+    transition.classList.add("active");
+
+    setTimeout(() => {
+
+      // 切換提示畫面
+      hideAllScreens();
+
+      document.getElementById("clueScreen")
+        .classList.add("active");
+
+      // 背景音樂淡入
+      puzzleMusic.pause();
+      puzzleMusic.currentTime = 0;
+      puzzleMusic.volume = 0;
+      puzzleMusic.loop = true;
+
+      puzzleMusic.play().then(() => {
+        fadeAudio(puzzleMusic, 0, 0.3, 2000);
+      }).catch(error => {
+        console.error("背景音樂播放失敗：", error);
+      });
+
+      // 白光開始淡出
+      requestAnimationFrame(() => {
+        transition.classList.remove("active");
+      });
+
+      // 等白光完全退去，再顯示倒數計時器
+      setTimeout(() => {
+
+        startTimer();
+
+        // 公布結果按鈕保持隱藏，改用空白鍵
+        document.getElementById("revealResultsButton")
+          .style.display = "none";
+
+      }, 1500);
+
+    }, 1500);
+
+  } catch (error) {
+    console.error("建立投票場次失敗：", error);
+    alert("無法開始投票，請檢查 Firebase 設定與網路連線");
+  }
+}
+
+  // ====================================
+  // 四位嫌疑人
+  // ====================================
+const correctSuspect = 0;
+
+
+const suspects = [
+  {
+    image: "images/徐正庭.jpg",
+    audio: "music/徐正庭.wav"
+  },
+  {
+    image: "images/許宸瑋.jpg",
+    audio: "music/許宸瑋.wav"
+  },
+  {
+    image: "images/周裕軒.jpg",
+    audio: "music/周裕軒.wav"
+  },
+  {
+    image: "images/洪昕妤.jpg",
+    audio: "music/洪昕妤.wav"
+  }
+];
+
+// 四首音樂只建立一次
+const suspectAudios = suspects.map(suspect => {
+  const audio = new Audio(suspect.audio);
+  audio.preload = "auto";
+  audio.volume = 1;
+
+  audio.addEventListener("error", () => {
+    console.error("音樂載入失敗：", suspect.audio);
+  });
+
+  return audio;
+});
+
+// 預先載入四首音樂
+function preloadSuspectMusic() {
+  suspectAudios.forEach(audio => {
+    audio.load();
+  });
+}
+
+  
+ function showSuspects() {
+  hideAllScreens();
+
+  document.getElementById("suspectScreen")
+    .classList.add("active");
+
+  const list = document.getElementById("suspectList");
+  list.innerHTML = "";
+
+  suspects.forEach((suspect, index) => {
+    const card = document.createElement("div");
+    card.className = "suspect";
+
+    if (selectedSuspect === index) {
+      card.classList.add("selected");
+    }
+
+    // 頭像
+    const avatar = document.createElement("img");
+    avatar.src = suspect.image;
+    avatar.className = "suspect-avatar";
+    avatar.alt = "嫌疑犯頭像";
+
+    avatar.onclick = () => {
+      selectedSuspect = index;
+      showSuspects();
     };
 
-    $("logoutBtn").onclick = () => signOut(auth);
-  </script>
+    // 播放／暫停
+    const playButton = document.createElement("button");
+    playButton.className = "suspect-play-btn";
+    playButton.dataset.index = index;
+
+    playButton.textContent =
+      currentAudio &&
+      currentSuspectIndex === index &&
+      !currentAudio.paused
+        ? "⏸ 暫停"
+        : "▶ 播放";
+
+    playButton.onclick = () => playMusic(index);
+
+    const selectText = document.createElement("p");
+    selectText.textContent =
+      selectedSuspect === index ? "✓ 已選擇" : "點擊頭像選擇";
+
+    card.appendChild(avatar);
+    card.appendChild(playButton);
+    card.appendChild(selectText);
+
+    list.appendChild(card);
+  });
+}
+
+  // ====================================
+  // 播放音樂
+  // ====================================
+
+function updatePlayButtons() {
+  document.querySelectorAll(".suspect-play-btn").forEach(btn => {
+    const i = Number(btn.dataset.index);
+
+    btn.textContent =
+      currentAudio &&
+      currentSuspectIndex === i &&
+      !currentAudio.paused
+        ? "⏸ 暫停"
+        : "▶ 播放";
+  });
+}
+
+
+function playMusic(index) {
+
+  const newAudio = suspectAudios[index];
+
+  // 同一首音樂：播放或暫停
+  if (currentAudio === newAudio) {
+
+    if (!newAudio.paused) {
+      newAudio.pause();
+      updatePlayButtons();
+    } else {
+      newAudio.play()
+        .then(updatePlayButtons)
+        .catch(console.error);
+    }
+
+    return;
+  }
+
+  // 停止背景音樂
+  if (fadeTimers.has(puzzleMusic)) {
+    clearInterval(fadeTimers.get(puzzleMusic));
+    fadeTimers.delete(puzzleMusic);
+  }
+
+  puzzleMusic.pause();
+
+  // 停止上一首嫌疑犯音樂
+  if (currentAudio) {
+
+    if (fadeTimers.has(currentAudio)) {
+      clearInterval(fadeTimers.get(currentAudio));
+      fadeTimers.delete(currentAudio);
+    }
+
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio.onended = null;
+  }
+
+  // 使用已預先載入的音樂
+  currentAudio = newAudio;
+  currentSuspectIndex = index;
+
+  newAudio.currentTime = 0;
+  newAudio.volume = 0;
+
+  newAudio.play().then(() => {
+
+    // 只淡入 0.3 秒
+    fadeAudio(newAudio, 0, 1, 300);
+
+    updatePlayButtons();
+
+  }).catch(error => {
+    console.error("嫌疑犯音樂播放失敗：", error);
+  });
+
+  // 音樂播放結束
+  newAudio.onended = () => {
+
+    if (currentAudio !== newAudio) return;
+
+    currentAudio = null;
+    currentSuspectIndex = -1;
+
+    updatePlayButtons();
+
+    // 恢復解謎背景音樂
+    puzzleMusic.volume = 0;
+
+    puzzleMusic.play().then(() => {
+      fadeAudio(puzzleMusic, 0, 0.3, 1000);
+    }).catch(console.error);
+  };
+
+  updatePlayButtons();
+}
+
+
+  // ====================================
+  // 確認駭客身分
+  // ====================================
+
+ 
+function confirmSuspect() {
+  if (gameOver) return;
+
+  // 沒有選擇嫌疑犯
+  if (selectedSuspect === -1) {
+    alert("請先選擇一位嫌疑人！");
+    return;
+  }
+
+  // 選錯：提示玩家繼續調查
+  if (selectedSuspect !== correctSuspect) {
+    alert("指認錯誤！請再仔細聆聽音樂，繼續尋找真正的駭客！");
+    selectedSuspect = -1;
+    showSuspects();
+    return;
+  }
+
+stopTimer();
+document.getElementById("timer").style.display = "none";
+  
+ // 選對：立即停止嫌疑犯音樂
+if (currentAudio) {
+  currentAudio.pause();
+  currentAudio.currentTime = 0;
+  currentAudio = null;
+  currentSuspectIndex = -1;
+}
+
+  // 停止解謎背景音樂
+  puzzleMusic.pause();
+  puzzleMusic.currentTime = 0;
+
+  // 播放成功影片
+  playStoryVideo("videos/success.mp4", () => {
+    hideAllScreens();
+
+    document.getElementById("resultScreen")
+      .classList.add("active");
+
+    document.getElementById("resultText").textContent =
+      "成功找出真正的駭客！";
+  });
+}
+
+  // ====================================
+  // 遊戲主迴圈
+  // ====================================
+
+
+function gameLoop() {
+  ctx.clearRect(0, 0, 960, 540);
+
+  drawRoom();
+  updatePlayer();
+  drawPlayer();
+
+  requestAnimationFrame(gameLoop);
+}
+
+
+  // 初始化
+  gameLoop();
+
+  window.startOpening = startOpening;
+window.showSuspects = showSuspects;
+window.confirmSuspect = confirmSuspect;
+
+</script>
+
 </body>
 </html>
-
