@@ -561,6 +561,62 @@
     transform: scale(1.04);
   }
 }
+    /* ===== 駭客身分揭曉特效 ===== */
+
+#hackerRevealScreen.revealed {
+  animation: revealShake 0.55s ease-out;
+}
+
+#hackerRevealScreen.revealed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ff1717;
+  pointer-events: none;
+  animation: revealFlash 0.65s ease-out forwards;
+}
+
+#hackerRevealScreen.revealed .hacker-question {
+  color: #ff2424;
+  text-shadow:
+    4px 0 #00eaff,
+    -4px 0 #ff0055,
+    0 0 35px #ff0000;
+  animation: revealGlitch 0.8s ease-out forwards;
+}
+
+@keyframes revealFlash {
+  0%, 25% { opacity: 0; }
+  10%, 35% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes revealShake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-8px, 3px); }
+  40% { transform: translate(9px, -4px); }
+  60% { transform: translate(-5px, 5px); }
+  80% { transform: translate(4px, -2px); }
+}
+
+@keyframes revealGlitch {
+  0% {
+    opacity: 0;
+    transform: scale(1.5) skew(-8deg);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.15) skew(6deg);
+  }
+  50% {
+    transform: scale(1.3) skew(-3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+    
   </style>
 </head>
 
@@ -1446,9 +1502,12 @@ if (isWin) {
   // 等待 20 秒後揭曉真正的駭客
   setTimeout(() => {
 
-    // 更改畫面文字
-    document.getElementById("hackerQuestion").textContent =
-      "徐正庭是駭客";
+   // 更改畫面文字並觸發揭曉特效
+document.getElementById("hackerQuestion").textContent =
+  "徐正庭是駭客";
+
+document.getElementById("hackerRevealScreen")
+  .classList.add("revealed");
 
     // 播放跳舞音樂
     const revealMusic = new Audio("music/跳舞.mp3");
