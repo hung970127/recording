@@ -54,13 +54,17 @@
   object-fit: contain !important;
 }
 
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      image-rendering: pixelated;
-    }
-
+ canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  image-rendering: pixelated;
+}
     .screen {
       position: absolute;
       inset: 0;
@@ -490,10 +494,47 @@
 
     /* ===== 駭客身分懸念畫面 ===== */
 
+/* ===== 駭客身分揭曉畫面 ===== */
+
 #hackerRevealScreen {
-  background: #05070d;
+  position: absolute;
+  overflow: hidden;
   z-index: 50;
   gap: 25px;
+
+  background:
+    /* 電腦掃描線 */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(255, 40, 40, 0.045) 4px
+    ),
+
+    /* 暗紅色科技網格 */
+    linear-gradient(
+      rgba(255, 35, 35, 0.08) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 35, 35, 0.08) 1px,
+      transparent 1px
+    ),
+
+    /* 中央紅色光暈 */
+    radial-gradient(
+      ellipse at center,
+      #471019 0%,
+      #19080e 45%,
+      #030305 85%
+    );
+
+  background-size:
+    100% 4px,
+    45px 45px,
+    45px 45px,
+    100% 100%;
 }
 
 #hackerRevealScreen .hacker-question {
@@ -563,7 +604,19 @@
   公布結果
 </button>
 
+<!-- 提前結束投票確認視窗 -->
+<div id="endVoteConfirm" class="screen" style="z-index: 150; background: rgba(0,0,0,0.9);">
+  <h1 style="color: #ff7777;">確定提前結束投票？</h1>
+  <p style="font-size: 22px;">此操作無法復原，將立即公布投票結果。</p>
 
+  <div>
+    <button onclick="cancelEndVote()">取消</button>
+    <button onclick="confirmEndVote()" style="background: #8b3030; border-color: #ff7777;">
+      確定公布
+    </button>
+  </div>
+</div>
+  
 <div id="videoScreen" class="screen">
   <video
     id="storyVideo"
@@ -692,7 +745,6 @@
 <h1 class="hacker-question" id="hackerQuestion">
   誰是駭客？
 </h1>
-  <p>正在揭曉真正的駭客身分……</p>
 </div>
 
 <!-- 第三頁：最終投票結果 -->
@@ -1101,11 +1153,12 @@ async function revealResultsEarly() {
     return;
   }
 
-  const confirmed = confirm(
-    "確定要提前結束投票並公布結果嗎？\n此操作無法復原。"
-  );
+  if (!endVoteConfirmed) {
+    document.getElementById("endVoteConfirm").classList.add("active");
+    return;
+  }
 
-  if (!confirmed) return;
+  endVoteConfirmed = false;
 
   const button = document.getElementById("revealResultsButton");
   button.disabled = true;
@@ -1160,6 +1213,22 @@ async function revealResultsEarly() {
 }
 
 window.revealResultsEarly = revealResultsEarly;
+  let endVoteConfirmed = false;
+
+function cancelEndVote() {
+  document.getElementById("endVoteConfirm").classList.remove("active");
+  endVoteConfirmed = false;
+}
+
+function confirmEndVote() {
+  document.getElementById("endVoteConfirm").classList.remove("active");
+  endVoteConfirmed = true;
+  revealResultsEarly();
+}
+
+window.cancelEndVote = cancelEndVote;
+window.confirmEndVote = confirmEndVote;
+  
 // ===== 提示畫面按空白鍵公布結果 =====
 document.addEventListener("keydown", (event) => {
   if (event.code !== "Space" || event.repeat) return;
@@ -1482,6 +1551,9 @@ window.showFinalResult = showFinalResult;
     ctx.fillText(str, x, y);
   }
 
+  const computerScreenImage = new Image();
+computerScreenImage.src = "images/電腦畫面.jpg";
+  
   // ====================================
   // 繪製 2D 宿舍
   // ====================================
@@ -1828,7 +1900,7 @@ ctx.restore();
 
 // 右床：向中央加寬 30px
 ctx.save();
-ctx.translate(527, 0);
+ctx.translate(560, 0);
 ctx.scale(310 / 280, 1);
 bunk(0, true);
 ctx.restore();
@@ -1948,7 +2020,7 @@ desk(0);
 ctx.restore();
 
 ctx.save();
-ctx.translate(575, 0);
+ctx.translate(608, 0);
 ctx.scale(0.72, 1);
 desk(0);
 ctx.restore();
@@ -1967,28 +2039,31 @@ ctx.restore();
   r(259, 301, 11, 5, "#59636e");
   r(244, 305, 42, 3, "#434b57");
 
-  // ===== 右側駭客電腦 =====
-  r(613, 251, 92, 50, "#07101b");
-  r(618, 256, 82, 40, "#31505a");
-  r(623, 261, 72, 30, "#073b3c");
+// ===== 右側電腦與桌燈：整組右移 33px =====
+ctx.save();
+ctx.translate(33, 0);
 
-  // 駭客程式碼
-  r(631, 267, 34, 2, "#49d9bb");
-  r(631, 273, 52, 2, "#248e80");
-  r(631, 286, 41, 2, "#49d9bb");
+// 電腦外框
+r(613, 251, 92, 50, "#07101b");
 
-  if (Math.sin(Date.now() / 220) > -0.5) {
-    text("HACKED", 632, 283, 11, "#a0ffe4");
-  }
+// 螢幕背景
+r(618, 256, 82, 40, "#31505a");
 
-  // 螢幕支架及底座
-  r(653, 301, 11, 5, "#4c5a61");
-  r(638, 305, 42, 3, "#3c4853");
+// 顯示電腦畫面.jpg
+if (computerScreenImage.complete && computerScreenImage.naturalWidth > 0) {
+  ctx.drawImage(computerScreenImage, 618, 256, 82, 40);
+}
 
-  // ===== 右側桌燈 =====
-  r(720, 279, 6, 28, "#8b8d89");
-  r(708, 267, 30, 13, "#c4a36b");
-  r(713, 280, 20, 3, "#f2cf91");
+// 螢幕支架及底座
+r(653, 301, 11, 5, "#4c5a61");
+r(638, 305, 42, 3, "#3c4853");
+
+// 右側桌燈
+r(720, 279, 6, 28, "#8b8d89");
+r(708, 267, 30, 13, "#c4a36b");
+r(713, 280, 20, 3, "#f2cf91");
+
+ctx.restore();
 
  
   // ===== 左右床底木製衣櫃 =====
@@ -2038,7 +2113,7 @@ ctx.restore();
   wardrobe(104);
 
   // 右床下方衣櫃
-  wardrobe(754);
+wardrobe(787);
 
  
   // ===== 加寬床架後的中央平台 =====
