@@ -972,14 +972,10 @@ function startOpening() {
 
   // 白光完全覆蓋後再切換影片
   setTimeout(() => {
-    const onVideoPlaying = () => {
-      storyVideo.removeEventListener("playing", onVideoPlaying);
-
-      // 影片開始播放後，白光淡出
-      requestAnimationFrame(() => {
-        transition.classList.remove("active");
-      });
-    };
+   const onVideoPlaying = () => {
+  storyVideo.removeEventListener("playing", onVideoPlaying);
+  transition.classList.remove("active");
+};
 
     storyVideo.addEventListener("playing", onVideoPlaying);
 
