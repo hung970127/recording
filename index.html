@@ -54,17 +54,13 @@
   object-fit: contain !important;
 }
 
- canvas {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: block;
-  image-rendering: pixelated;
-}
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+    }
+
     .screen {
       position: absolute;
       inset: 0;
@@ -567,19 +563,7 @@
   公布結果
 </button>
 
-<!-- 提前結束投票確認視窗 -->
-<div id="endVoteConfirm" class="screen" style="z-index: 150; background: rgba(0,0,0,0.9);">
-  <h1 style="color: #ff7777;">確定提前結束投票？</h1>
-  <p style="font-size: 22px;">此操作無法復原，將立即公布投票結果。</p>
 
-  <div>
-    <button onclick="cancelEndVote()">取消</button>
-    <button onclick="confirmEndVote()" style="background: #8b3030; border-color: #ff7777;">
-      確定公布
-    </button>
-  </div>
-</div>
-  
 <div id="videoScreen" class="screen">
   <video
     id="storyVideo"
@@ -1117,12 +1101,11 @@ async function revealResultsEarly() {
     return;
   }
 
-  if (!endVoteConfirmed) {
-    document.getElementById("endVoteConfirm").classList.add("active");
-    return;
-  }
+  const confirmed = confirm(
+    "確定要提前結束投票並公布結果嗎？\n此操作無法復原。"
+  );
 
-  endVoteConfirmed = false;
+  if (!confirmed) return;
 
   const button = document.getElementById("revealResultsButton");
   button.disabled = true;
@@ -1177,22 +1160,6 @@ async function revealResultsEarly() {
 }
 
 window.revealResultsEarly = revealResultsEarly;
-  let endVoteConfirmed = false;
-
-function cancelEndVote() {
-  document.getElementById("endVoteConfirm").classList.remove("active");
-  endVoteConfirmed = false;
-}
-
-function confirmEndVote() {
-  document.getElementById("endVoteConfirm").classList.remove("active");
-  endVoteConfirmed = true;
-  revealResultsEarly();
-}
-
-window.cancelEndVote = cancelEndVote;
-window.confirmEndVote = confirmEndVote;
-  
 // ===== 提示畫面按空白鍵公布結果 =====
 document.addEventListener("keydown", (event) => {
   if (event.code !== "Space" || event.repeat) return;
@@ -1515,9 +1482,6 @@ window.showFinalResult = showFinalResult;
     ctx.fillText(str, x, y);
   }
 
-  const computerScreenImage = new Image();
-computerScreenImage.src = "images/電腦畫面.jpg";
-  
   // ====================================
   // 繪製 2D 宿舍
   // ====================================
@@ -1864,7 +1828,7 @@ ctx.restore();
 
 // 右床：向中央加寬 30px
 ctx.save();
-ctx.translate(560, 0);
+ctx.translate(527, 0);
 ctx.scale(310 / 280, 1);
 bunk(0, true);
 ctx.restore();
@@ -2003,22 +1967,23 @@ ctx.restore();
   r(259, 301, 11, 5, "#59636e");
   r(244, 305, 42, 3, "#434b57");
 
-// ===== 右側駭客電腦 =====
+  // ===== 右側駭客電腦 =====
+  r(613, 251, 92, 50, "#07101b");
+  r(618, 256, 82, 40, "#31505a");
+  r(623, 261, 72, 30, "#073b3c");
 
-// 電腦外框
-r(613, 251, 92, 50, "#07101b");
+  // 駭客程式碼
+  r(631, 267, 34, 2, "#49d9bb");
+  r(631, 273, 52, 2, "#248e80");
+  r(631, 286, 41, 2, "#49d9bb");
 
-// 螢幕背景
-r(618, 256, 82, 40, "#31505a");
+  if (Math.sin(Date.now() / 220) > -0.5) {
+    text("HACKED", 632, 283, 11, "#a0ffe4");
+  }
 
-// 顯示電腦畫面.jpg
-if (computerScreenImage.complete && computerScreenImage.naturalWidth > 0) {
-  ctx.drawImage(computerScreenImage, 618, 256, 82, 40);
-}
-
-// 螢幕支架及底座
-r(653, 301, 11, 5, "#4c5a61");
-r(638, 305, 42, 3, "#3c4853");
+  // 螢幕支架及底座
+  r(653, 301, 11, 5, "#4c5a61");
+  r(638, 305, 42, 3, "#3c4853");
 
   // ===== 右側桌燈 =====
   r(720, 279, 6, 28, "#8b8d89");
